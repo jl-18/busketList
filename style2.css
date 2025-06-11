@@ -4,8 +4,20 @@
 :root {
     --white: #FFFFFF;
     --black: #000000;
-    --red: #AD1115;
+    --red: #AD1115; /* Your existing red */
     --box-shadow: #EEEEEE;
+
+    /* New variables for seat selection to match Tailwind's neutral and specific seat colors */
+    --red-500: #ef4444; /* Specific red for steering wheel, matches image_233c55.png */
+    --border-neutral-200: #e5e5e5; /* neutral-200 for outer border */
+    --border-neutral-300: #d4d4d4; /* neutral-300 for dashed border */
+    --text-neutral-600: #525252; /* neutral-600 for text */
+    --light-border-grey: #eee; /* For legend border, similar to a light neutral */
+
+    /* Seat colors from image_233c55.png */
+    --seat-available: #b3b3b3; /* Gray */
+    --seat-booked: #ef4444;   /* Red */
+    --seat-selected: #f97316;  /* Orange */
 }
 
 *,
@@ -103,6 +115,20 @@ span {
     color: var(--red); 
     margin: 0 10px; 
     font-size: 0.8em; 
+}
+
+.book-info {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    /* border: 3px solid palegreen; */
+}
+
+.book-details-schedule {
+    color: #333;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
 }
 
 .book-header .book-info .separator {
@@ -283,6 +309,14 @@ form {
     background-color: #a00f12; /* Slightly darker red */
 }
 
+/* seatSelection */
+/* The previous .seat-selection was just a padding holder. Now it's the main container style */
+/* If you had other styles for this, you'll need to merge them */
+/* I am removing the old .seat-selection { padding: 30px 40px; } as the new .seat-selection-container handles it */
+
+
+/* FOOTER */
+
 footer {
     background-color: rgb(0, 0, 0);
     color: whitesmoke;
@@ -340,4 +374,202 @@ footer .splitter {
     text-align: center;
     opacity: 70%;
     padding: 10px;
+}
+
+
+.seat-selection-container {
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    padding: 20px 30px;
+    border: 1px solid var(--border-neutral-200);
+    width: 100%;
+    max-width: 800px;
+    margin: 30px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.seat-instruction-text {
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.seat-instruction-text p {
+    font-size: 16px;
+    color: var(--text-neutral-600);
+    font-weight: 500;
+    text-align: center;
+}
+
+#seatSelectionForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.seat-map-grid-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-neutral-200);
+    margin-bottom: 20px;
+}
+
+.steering-wheel-column {
+    width: 40px;
+    flex-shrink: 0;
+    height: fit-content;
+    padding-top: 20px; /* Adjusted padding-top to align better with squares */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Replaced .steering-wheel-icon with .steering-wheel-placeholder */
+
+
+.seat-rows-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-left: 2px dashed var(--border-neutral-300);
+    padding-left: 20px;
+    gap: 20px;
+    /* border: 3px solid yellow; */
+    
+}
+
+.seat-row {
+    /* border: 3px solid yellow; */
+
+    width: 100%;
+    display: grid;
+    gap: 10px; /* Smaller gap for compact squares */
+    justify-content: center;
+    padding-right: 15px;
+}
+
+.seat-row-b, .seat-row-a {
+    grid-template-columns: repeat(9, 45px); /* Fixed width for squares, adjust as needed */
+}
+
+.seat-row-19 {
+    grid-template-columns: repeat(10, 45px); /* Adjust for the 10th column */
+}
+
+.empty-col-span-9 {
+    grid-column: span 9 / span 9;
+}
+
+.seat-item {
+    width: 45px; /* Fixed width for the square */
+    height: 45px; /* Fixed height for the square */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center seat ID text */
+    cursor: pointer;
+    text-align: center;
+    border-radius: 4px; /* Slightly rounded corners for the square */
+    transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out;
+    border: 1px solid rgba(0,0,0,0.1); /* Subtle border for definition */
+}
+
+.seat-item:hover:not(.seat--booked) {
+    transform: scale(1.05);
+    box-shadow: 0 0 5px rgba(0,0,0,0.2); /* Add a subtle shadow on hover */
+}
+
+/* Using general span within seat-item to style the seat ID */
+.seat-item span {
+    font-size: 14px;
+    color: var(--text-neutral-600); /* Default text color for available seats */
+    font-weight: 600;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Seat Status Colors for the squares */
+.seat--available {
+    background-color: var(--seat-available); /* Gray */
+}
+
+.seat--booked {
+    background-color: var(--seat-booked); /* Red */
+    cursor: not-allowed;
+}
+.seat--booked span { /* Ensure text is visible on red */
+    color: var(--white);
+}
+
+
+.seat--selected {
+    background-color: var(--seat-selected); /* Orange */
+}
+.seat--selected span { /* Ensure text is visible on orange */
+    color: var(--white);
+}
+
+
+/* Seat Legend (Adjusted for plain squares) */
+.seat-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    color: var(--text-neutral-600);
+}
+
+/* New class for the legend color squares */
+.legend-square {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 8px;
+    border: 1px solid rgba(0,0,0,0.1); /* Add border for legend squares too */
+}
+
+/* The .form-actions and .next-button rules for the seat selection module
+   override or complement the general .form-actions and .next-button above.
+   I'll keep them here to specifically style the button within the seat selection.
+*/
+.seat-selection-container .form-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Align button to the right */
+    padding-top: 20px;
+    margin-top: 0;
+    border-top: none;
+}
+
+.seat-selection-container .next-button {
+    background-color: var(--red);
+    color: var(--white);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+    align-self: flex-end;
+}
+
+.seat-selection-container .next-button:hover {
+    background-color: #dc2626; /* Darker red on hover */
 }

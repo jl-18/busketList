@@ -1,14 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Busket List</title>
+    <title>Select Your Trip - Busket List</title>
     <link rel="stylesheet" href="style2.css?v=<?php echo time(); ?>">
 </head>
-
 <body>
     <header>
         <nav>
@@ -24,16 +21,42 @@
 
         <section>
             <div class="book-steps">
-            <p><span>Step 1: </span>Choose a departure schedule</p>
+                <p><span>Step 1: </span>Choose a departure schedule</p>
             </div>
         </section>
     </header>
 
     <main>
         <div class="book-selection">
+            <?php
+            // Retrieve ALL initial search details from URL parameters (from index.html)
+            $origin = htmlspecialchars($_GET['origin'] ?? '');
+            $destination = htmlspecialchars($_GET['destination'] ?? '');
+            $depart = htmlspecialchars($_GET['depart'] ?? '');
+            $tripType = htmlspecialchars($_GET['trip-type'] ?? '');
+            $passengers = htmlspecialchars($_GET['passengers'] ?? '1'); // Default to 1
+            $returnDate = htmlspecialchars($_GET['return'] ?? ''); // Get return date if it exists
+
+            // Format for display
+            $formattedOrigin = strtoupper($origin);
+            $formattedDestination = strtoupper($destination);
+            $displayDepartDate = $depart ?: 'N/A';
+            $displayTripType = $tripType ? ucwords(str_replace('-', ' ', $tripType)) : 'N/A';
+            $displayPassengers = $passengers ?: '1';
+            ?>
+
             <div class="book-header">
-                <div class="origin-destination"></div>
-                <div class="book-info"></div>
+                <div class="origin-destination">
+                    <h1><?php echo $formattedOrigin; ?> <span class="arrow-separator">►</span> <?php echo $formattedDestination; ?></h1>
+                </div>
+                <div class="book-info">
+                    <p class="book-details">
+                        <?php echo $displayDepartDate; ?> <span class="separator">|</span>
+                        <?php echo $displayTripType; ?> <span class="separator">|</span>
+                        Total Passenger: <?php echo $displayPassengers; ?>
+                        <?php if (!empty($returnDate)) { echo '<span class="separator">|</span> Return Date: ' . htmlspecialchars($returnDate); } ?>
+                    </p>
+                </div>
             </div>
 
             <table class="trips-table">
@@ -48,8 +71,7 @@
                 </thead>
                 <tbody>
                     <?php
-                    // This section will now be processed by the PHP server.
-                    // Replace this static array with actual database fetching code.
+                    // Dummy data for demonstration. In a real application, this would come from a database.
                     $trips = [
                         ['time' => '12:00 AM', 'class' => 'Regular Aircon (EXPRESS)', 'seats' => 38, 'fare' => 586.00],
                         ['time' => '07:00 AM', 'class' => 'Regular Aircon (EXPRESS)', 'seats' => 38, 'fare' => 586.00],
@@ -61,21 +83,33 @@
                     ];
 
                     foreach ($trips as $trip) {
-                    // Encode trip details for URL parameters
-                    $encodedTime = urlencode($trip['time']);
-                    $encodedClass = urlencode($trip['class']);
-                    $encodedSeats = urlencode($trip['seats']);
-                    $encodedFare = urlencode($trip['fare']);
+                        // Prepare ALL parameters to be passed to passenger.php
+                        $params = [
+                            'time' => urlencode($trip['time']),
+                            'class' => urlencode($trip['class']),
+                            'seats' => urlencode($trip['seats']),
+                            'fare' => urlencode($trip['fare']),
+                            // Add original search parameters
+                            'origin' => urlencode($origin),
+                            'destination' => urlencode($destination),
+                            'depart' => urlencode($depart),
+                            'trip-type' => urlencode($tripType),
+                            'passengers' => urlencode($passengers),
+                        ];
+                        if (!empty($returnDate)) {
+                            $params['return'] = urlencode($returnDate);
+                        }
 
-                    echo '<tr>';
-                    echo '<td>' . htmlspecialchars($trip['time']) . '</td>';
-                    echo '<td>' . htmlspecialchars($trip['class']) . '</td>';
-                    echo '<td>' . htmlspecialchars($trip['seats']) . '</td>';
-                    echo '<td>₱' . number_format($trip['fare'], 2) . '</td>';
-                    // Link the "Book" button to customerInfo.php, passing trip details as URL parameters
-                    echo '<td><a href="passenger.php?time=' . $encodedTime . '&class=' . $encodedClass . '&seats=' . $encodedSeats . '&fare=' . $encodedFare . '" class="book-button">Book</a></td>';
-                    echo '</tr>';
-}
+                        $query_string = http_build_query($params); // Builds the URL query string
+
+                        echo '<tr>';
+                        echo '<td>' . htmlspecialchars($trip['time']) . '</td>';
+                        echo '<td>' . htmlspecialchars($trip['class']) . '</td>';
+                        echo '<td>' . htmlspecialchars($trip['seats']) . '</td>';
+                        echo '<td>₱' . number_format($trip['fare'], 2) . '</td>';
+                        echo '<td><a href="passenger.php?' . $query_string . '" class="book-button">Book</a></td>';
+                        echo '</tr>';
+                    }
                     ?>
                 </tbody>
             </table>
@@ -106,41 +140,5 @@
         <p class="copy-right">2025 Busket List</p> 
     </footer>
 
-    <script>
-        // Move script to the end of the body for better performance
-        const params = new URLSearchParams(window.location.search);
-        const tripType = params.get('trip-type');
-        const origin = params.get('origin');
-        const destination = params.get('destination');
-        const depart = params.get('depart');
-        const returnDate = params.get('return');
-        const passengers = params.get('passengers');
-
-        const originDestinationDiv = document.querySelector('.origin-destination');
-        const bookInfoDiv = document.querySelector('.book-info');
-
-        if (origin && destination) {
-            const formattedOrigin = origin.toUpperCase();
-            const formattedDestination = destination.toUpperCase();
-            
-            originDestinationDiv.innerHTML = `<h1>${formattedOrigin} <span class="arrow-separator">►</span> ${formattedDestination} </h1>`;
-        } else {
-            originDestinationDiv.innerHTML = `<h1>Route Information Unavailable</h1>`;
-        }
-
-        const displayDepartDate = depart || 'N/A'; 
-        const displayTripType = tripType ? tripType.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A'; 
-        const displayPassengers = passengers || '1';
-
-        bookInfoDiv.innerHTML = `
-            <p class="book-details">
-                ${displayDepartDate} <span class="separator">|</span>
-                ${displayTripType} <span class="separator">|</span>
-                Total Passenger: ${displayPassengers}
-            </p>
-        `;
-
-        console.log(tripType, origin, destination, depart, returnDate, passengers);
-    </script>
-</body>
+    </body>
 </html>
