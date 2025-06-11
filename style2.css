@@ -1,0 +1,343 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+
+:root {
+    --white: #FFFFFF;
+    --black: #000000;
+    --red: #AD1115;
+    --box-shadow: #EEEEEE;
+}
+
+*,
+*::after,
+*::before { 
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* img, picture {
+    max-width: max-content;
+} */
+
+header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    row-gap: 30px;
+    /* border: 3px solid red; */
+    
+}
+
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 60px;
+    padding: 10px 40px 10px 40px;
+    /* border: 3px solid black; */
+    background-color: #AD1115;
+    align-items: center;
+}
+
+nav h1 {
+    color: #FFFFFF;
+    font-style:oblique;
+}
+
+nav ul {
+    color: #EEEE;
+    display: flex;
+    list-style-type: none;
+    /* border: 3px solid palegreen; */
+    flex-direction: row;
+    justify-content: space-between;
+    width: 400px;
+}
+
+section {
+    /* border: 3px solid palegreen; */
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(255, 242, 61);
+    font-size: 18px;
+    color: rgb(27, 26, 26);
+}
+
+span {
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    padding-right: 5px;
+}
+
+.book-selection {
+    display:flex;
+    flex-direction: column;
+        /* border: 3px solid palegreen; */
+    margin-top: 30px;
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-bottom: 50px;
+}
+
+.book-header {
+    background-color: var(--white); 
+    padding: 20px 5px; 
+    border-bottom: 1px solid #ddd; 
+    text-align: left; 
+}
+
+.book-header .origin-destination h1 {
+    font-size: 3em; 
+    font-weight: 600; 
+    color: #333; 
+    margin-bottom: 10px; 
+    display: flex; 
+    align-items: center; 
+}
+
+.book-header .origin-destination .arrow-separator {
+    color: var(--red); 
+    margin: 0 10px; 
+    font-size: 0.8em; 
+}
+
+.book-header .book-info .separator {
+    color: #ccc; 
+    margin: 0 10px;
+}
+
+.container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px; 
+    margin-top: 50px; 
+}
+
+
+.trips-table {
+    width: 100%;
+    border-collapse: collapse; 
+    margin-top: 20px;
+}
+
+.trips-table thead th {
+    background-color: #f8f8f8; 
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    color: #555;
+    font-weight: bold;
+}
+
+.trips-table tbody td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.trips-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; 
+}
+
+.trips-table tbody tr:hover {
+    background-color: #f1f1f1; 
+}
+
+.trips-table tbody td:last-child {
+    text-align: right; 
+}
+
+.book-button {
+    background-color: #e74c3c; 
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    text-decoration: none; 
+    display: inline-block; 
+    text-align: center; 
+    white-space: nowrap; 
+}
+
+.book-button:hover {
+    background-color: #c0392b;
+}
+
+.customer-form-container {
+    /* border: 3px solid #000000; */
+    margin-top: 40px;
+    margin-left: 60px;
+    margin-right: 60px;
+    margin-bottom: 40px;
+}
+
+form {
+    /* border: 3px solid red; */
+}
+
+.form-columns {
+    /* border: 3px solid red; */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 50px;
+}
+
+.form-column {
+    /* border: 3px solid black; */
+    flex: 1 1 45%; /* Each column takes about 45% width, allowing space for gap */
+    min-width: 300px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95em;
+}
+
+/* Styles for the red asterisk next to required labels */
+.form-group label.required::before {
+    content: '* ';
+    color: var(--red); /* Red color for asterisk */
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="tel"]:focus {
+    border-color: var(--red);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(173, 17, 21, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; /* Spans across both columns */
+    margin-top: 30px;
+    border-top: 1px solid #eee; /* A subtle line above buttons */
+    padding-top: 20px;
+}
+
+.back-link {
+    color: var(--red);
+    text-decoration: none;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+}
+
+.back-link:hover {
+    margin-left: 3px;
+
+}
+
+.back-link::before {
+    content: '← ';
+    margin-right: 5px;
+    font-size: 1.2em;
+}
+
+.next-button {
+    background-color: var(--red);
+    color: var(--white);
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.next-button:hover {
+    background-color: #a00f12; /* Slightly darker red */
+}
+
+footer {
+    background-color: rgb(0, 0, 0);
+    color: whitesmoke;
+}
+
+footer .footerBoxes {
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    align-content: space-around;
+    justify-content: space-around;
+    align-items: center;
+    gap: 50px;
+    padding: 35px 50px 35px 50px;
+    /* border: 3px solid yellow; */
+
+}
+
+footer .footerBoxes .footerBox {
+    flex-direction: column;
+    text-align: start;
+    /* border: 3px solid red; */
+}
+
+footer .footerBoxes .footerBox h3 {
+    color: whitesmoke;
+    font-size: 16.5px;
+    font-weight: bold;
+    letter-spacing: 0px;
+}
+
+footer .footerBoxes .footerBox hr {
+    width: 40px;
+    background: rgb(148, 148, 148);
+    border: 1px solid rgb(70, 69, 69);
+    margin-bottom: 8px;
+}
+
+footer .footerBoxes .footerBox p {
+    font-size: 13px;
+    color: rgb(70, 69, 69);
+}
+
+footer .splitter {
+    align-items: center;
+    height: 0px;
+    margin: 30px 25px 5px 25px;
+    background: none;
+    border: 1px solid rgb(94, 92, 92);
+}
+
+.copy-right {
+    align-items: center;
+    font-size: 13.5px;
+    text-align: center;
+    opacity: 70%;
+    padding: 10px;
+}
