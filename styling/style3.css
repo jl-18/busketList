@@ -1,0 +1,396 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+:root {
+    --white: #FFFFFF;
+    --black: #000000;
+    --red: #AD1115; 
+    --box-shadow: #EEEEEE;
+
+    --red-500: #ef4444; 
+    --border-neutral-200: #e5e5e5; 
+    --border-neutral-300: #d4d4d4; 
+    --text-neutral-600: #525252; 
+    --light-border-grey: #eee; 
+
+    --seat-available: #b3b3b3; 
+    --seat-booked: #ef4444;   
+    --seat-selected: #f97316;  
+}
+
+*,
+*::after,
+*::before { 
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* img, picture {
+    max-width: max-content;
+} */
+
+header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* row-gap: 30px; */
+    /* border: 3px solid red; */
+    
+}
+
+nav {
+    display: flex;
+    flex-direction: row;
+    position: sticky;
+    top: 0;
+    justify-content: space-between;
+    height: 60px;
+    padding: 10px 40px 10px 40px;
+    /* border: 3px solid black; */
+    background-color: #AD1115;
+    align-items: center;
+}
+
+nav h1 {
+    color: #FFFFFF;
+    font-style:oblique;
+}
+
+nav ul {
+    color: #EEEE;
+    display: flex;
+    list-style-type: none;
+    /* border: 3px solid palegreen; */
+    flex-direction: row;
+    justify-content: space-between;
+    width: 400px;
+}
+
+.img-placeholder {
+    width: 100%;
+    height: 30vh;
+    background-image: url("https://cdn.pixabay.com/photo/2020/09/21/11/41/bus-5589826_1280.jpg");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 1;
+    transform: translate(-800);
+    /* background-position: center; */
+}
+
+section {
+    /* border: 3px solid palegreen; */
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(255, 242, 61);
+    font-size: 18px;
+    color: rgb(27, 26, 26);
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    /* border:solid #000000; */
+}
+.book-steps span {
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    padding-right: 5px;
+}
+
+.book-selection {
+    display:flex;
+    flex-direction: column;
+        /* border: 3px solid palegreen; */
+    margin-top: 30px;
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-bottom: 50px;
+}
+
+.book-header {
+    background-color: var(--white); 
+    padding: 20px 5px; 
+    border-bottom: 1px solid #ddd; 
+    text-align: left; 
+}
+
+.book-header .origin-destination h1 {
+    font-size: 3em; 
+    font-weight: 600; 
+    color: #333; 
+    margin-bottom: 10px; 
+    display: flex; 
+    align-items: center; 
+}
+
+.book-header .origin-destination .arrow-separator {
+    color: var(--red); 
+    margin: 0 10px; 
+    font-size: 0.8em; 
+}
+
+.book-info {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    /* border: 3px solid palegreen; */
+}
+
+.book-details-schedule {
+    color: #333;
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+}
+
+.book-details-schedule span {
+    font-weight: bold;
+}
+
+.book-header .book-info .separator {
+    color: #ccc; 
+    margin: 0 10px;
+}
+
+/* --- Fare Amount Container Styles --- */
+
+.fare-payment-container {
+    align-self: center;
+
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;    
+    /* border: solid blue; */
+
+}
+
+.fare-amount-container {
+    background-color: var(--white);
+    border-radius: 12px; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06); 
+    padding: 25px 30px;
+    border: 1px solid var(--border-neutral-200);
+    width: 100%;
+    max-width: 500px; 
+    margin: 30px auto; 
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+}
+
+.fare-amount-title {
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-neutral-200);
+}
+
+.fare-amount-title p {
+    font-size: 20px; 
+    font-weight: 700; 
+    color: var(--text-neutral-600); 
+    text-align: center;
+}
+
+.fare-amount-info {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; 
+}
+
+.fare-amount-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fare-amount-summary {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+}
+
+.fare-amount-summary p {
+    font-size: 16px; 
+    color: var(--text-neutral-600);
+    font-weight: 600;
+}
+
+.fare-amount-calcu p {
+    font-size: 15px; 
+    color: var(--text-neutral-600);
+    font-weight: 400;
+}
+
+.fare-amount-group p {
+    font-size: 16px; 
+    color: var(--text-neutral-600);
+    font-weight: 600;
+}
+
+.fare-amount-calcu {
+    display: flex;
+    flex-direction: row;
+    padding-left: 5px;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.fare-amount-calcu p:first-child {
+    font-size: 14px; 
+    color: var(--text-neutral-600);
+    font-weight: 400; 
+}
+
+.fare-amount-calcu p:last-child {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-neutral-600);
+}
+
+.fare-amount-group:last-child p:last-child {
+    font-size: 24px; 
+    font-weight: 700; 
+    color: var(--red); 
+}
+
+
+/* --- Payment Container --- */
+.payment-container {
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    padding: 25px 30px;
+    border: 1px solid var(--border-neutral-200);
+    width: 100%;
+    max-width: 500px;
+    margin: 30px auto 50px auto; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px; 
+}
+
+.payment-input {
+    width: 100%; 
+    text-align: center; 
+}
+
+.payment-input label {
+    display: block; 
+    margin-bottom: 10px;
+    font-size: 18px; 
+    font-weight: 600;
+    color: var(--text-neutral-600);
+}
+
+.payment-input label.required::before {
+    content: '* ';
+    color: var(--red);
+    font-weight: bold;
+}
+
+.payment-input input[type="text"] {
+    width: 80%; 
+    max-width: 300px; 
+    padding: 12px 15px;
+    border: 1px solid var(--border-neutral-200);
+    border-radius: 8px; 
+    font-size: 1.2em;
+    text-align: center; 
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.07); 
+}
+
+.payment-input input[type="number"]:focus {
+    border-color: var(--red);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(173, 17, 21, 0.2);
+}
+
+.Enter { 
+    background-color: var(--red);
+    color: var(--white);
+    padding: 15px 40px; 
+    border: none;
+    border-radius: 8px; 
+    cursor: pointer;
+    font-size: 1.2em; 
+    font-weight: 700; 
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    width: 100%; 
+    max-width: 250px; 
+}
+
+.Enter:hover {
+    background-color: #a00f12; 
+    transform: translateY(-2px); 
+}
+
+.Enter:active {
+    transform: translateY(0); /
+}
+
+/* FOOTER */
+
+footer {
+    background-color: rgb(0, 0, 0);
+    color: whitesmoke;
+}
+
+footer .footerBoxes {
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    align-content: space-around;
+    justify-content: space-around;
+    align-items: center;
+    gap: 50px;
+    padding: 35px 50px 35px 50px;
+    /* border: 3px solid yellow; */
+
+}
+
+footer .footerBoxes .footerBox {
+    flex-direction: column;
+    text-align: start;
+    /* border: 3px solid red; */
+}
+
+footer .footerBoxes .footerBox h3 {
+    color: whitesmoke;
+    font-size: 16.5px;
+    font-weight: bold;
+    letter-spacing: 0px;
+}
+
+footer .footerBoxes .footerBox hr {
+    width: 40px;
+    background: rgb(148, 148, 148);
+    border: 1px solid rgb(70, 69, 69);
+    margin-bottom: 8px;
+}
+
+footer .footerBoxes .footerBox p {
+    font-size: 13px;
+    color: rgb(70, 69, 69);
+}
+
+footer .splitter {
+    align-items: center;
+    height: 0px;
+    margin: 30px 25px 5px 25px;
+    background: none;
+    border: 1px solid rgb(94, 92, 92);
+}
+
+.copy-right {
+    align-items: center;
+    font-size: 13.5px;
+    text-align: center;
+    opacity: 70%;
+    padding: 10px;
+}
+

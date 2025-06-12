@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seat Selection - Busket List</title>
-    <link rel="stylesheet" href="style2.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="styling/style2.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css?v=<?php echo time(); ?>">
 </head>
 <body>
@@ -18,7 +18,7 @@
             </ul>
         </nav>
 
-        <div>pic placeholder</div>
+        <div class="img-placeholder"></div>
 
         <section>
             <div class="book-steps">
@@ -30,7 +30,6 @@
     <main>
         <?php
         // Retrieve ALL necessary data from POST (from passenger.php)
-        // You still need htmlspecialchars for security, but add urldecode for display.
         $origin = htmlspecialchars(urldecode($_POST['originalOrigin'] ?? ''));
         $destination = htmlspecialchars(urldecode($_POST['originalDestination'] ?? ''));
         $depart = htmlspecialchars(urldecode($_POST['originalDepart'] ?? ''));
@@ -38,61 +37,49 @@
         $passengers = htmlspecialchars(urldecode($_POST['originalPassengers'] ?? '1'));
         $returnDate = htmlspecialchars(urldecode($_POST['originalReturnDate'] ?? ''));
 
-        // Trip details from the previous step
         $selectedTime = htmlspecialchars(urldecode($_POST['selectedTime'] ?? ''));
         $selectedClass = htmlspecialchars(urldecode($_POST['selectedClass'] ?? ''));
-        $selectedSeatsFromBookSelection = htmlspecialchars(urldecode($_POST['selectedSeats'] ?? '')); // This was available seats, not actual selected seats
+        $selectedSeatsFromBookSelection = htmlspecialchars(urldecode($_POST['selectedSeats'] ?? '')); // available seats
         $selectedFare = htmlspecialchars(urldecode($_POST['selectedFare'] ?? ''));
 
-        // Customer details (for confirmation or further processing)
-        $firstName = htmlspecialchars($_POST['firstName'] ?? '');
-        $lastName = htmlspecialchars($_POST['lastName'] ?? '');
-        $email = htmlspecialchars($_POST['email'] ?? '');
-        $mobileNo = htmlspecialchars($_POST['mobileNo'] ?? '');
-        $fullAddress = htmlspecialchars($_POST['fullAddress'] ?? '');
+        $firstName = htmlspecialchars(urldecode($_POST['firstName'] ?? ''));
+        $middleName = htmlspecialchars(urldecode($_POST['middleName'] ?? ''));
+        $lastName = htmlspecialchars(urldecode($_POST['lastName'] ?? ''));
+        $email = htmlspecialchars(urldecode($_POST['email'] ?? ''));
+        $mobileNo = htmlspecialchars(urldecode($_POST['mobileNo'] ?? ''));
+        $fullAddress = htmlspecialchars(urldecode($_POST['fullAddress'] ?? ''));
 
         // --- Seat Data Logic ---
-        // In a real application, 'status' would come from a database query
-        // based on the specific trip ID.
-        // For demonstration, let's create dummy seat data that resembles your image.
+        // DUMMY DATA; change this once database is ready
         $busSeatData = [];
-        $seatLabels = ['B', 'B', 'A', 'A']; // Corresponds to the rows in your image
-        $seatCounter = 1;
-
-        // Simulate booking some seats for the example as per image_233c55.png
         $bookedSeatIds = ['B3', 'B7', 'B17', 'A2', 'A6', 'A10', 'A14', 'A18'];
         $selectedSeatIds = []; // This will be populated by JS
 
-        // Generate seats for B rows (B1-B18)
-        for ($row = 0; $row < 2; $row++) { // Two 'B' rows
+        for ($row = 0; $row < 2; $row++) { 
             for ($i = 1; $i <= 9; $i++) {
                 $seatId = 'B' . ($row * 9 + $i);
                 $status = in_array($seatId, $bookedSeatIds) ? 'booked' : 'available';
-                $busSeatData[] = ['id' => $seatId, 'status' => $status /* REMOVED: 'gender' => null */];
+                $busSeatData[] = ['id' => $seatId, 'status' => $status];
             }   
         }
 
-        // Generate seat for 19 (single seat at end of A row)
-        $busSeatData[] = ['id' => '19', 'status' => 'available' /* REMOVED: 'gender' => null */]; // Seat 19 is available in image
+        $busSeatData[] = ['id' => '19', 'status' => 'available']; 
 
-        // Generate seats for A rows (A1-A18)
-        for ($row = 0; $row < 2; $row++) { // Two 'A' rows
+        for ($row = 0; $row < 2; $row++) { 
             for ($i = 1; $i <= 9; $i++) {
                 $seatId = 'A' . ($row * 9 + $i);
                 $status = in_array($seatId, $bookedSeatIds) ? 'booked' : 'available';
-                $busSeatData[] = ['id' => $seatId, 'status' => $status /* REMOVED: 'gender' => null */];
+                $busSeatData[] = ['id' => $seatId, 'status' => $status];
             }
         }
 
-
-        // Function to determine seat class based on status and gender for display
+        // Function to determine seat class based on status
         function getSeatClass($seat, $currentSelectedSeats) {
-            $class = 'seat-item'; // Base class
+            $class = 'seat-item';
             if (in_array($seat['id'], $currentSelectedSeats)) {
                 $class .= ' seat--selected';
             } elseif ($seat['status'] === 'booked') {
                 $class .= ' seat--booked';
-                // REMOVED: gender-specific classes
             } else {
                 $class .= ' seat--available';
             }
@@ -126,25 +113,24 @@
                     <p>Click on available seats to reserve your seat.</p>
                 </div>
 
-                <form id="seatSelectionForm" action="processPayment.php" method="POST">
-                    <input type="hidden" name="originalOrigin" value="<?php echo htmlspecialchars(urlencode($origin)); ?>">
-                    <input type="hidden" name="originalDestination" value="<?php echo htmlspecialchars(urlencode($destination)); ?>">
-                    <input type="hidden" name="originalDepart" value="<?php echo htmlspecialchars(urlencode($depart)); ?>">
-                    <input type="hidden" name="originalTripType" value="<?php echo htmlspecialchars(urlencode($tripType)); ?>">
-                    <input type="hidden" name="originalPassengers" value="<?php echo htmlspecialchars(urlencode($passengers)); ?>">
-                    <input type="hidden" name="originalReturnDate" value="<?php echo htmlspecialchars(urlencode($returnDate)); ?>">
-                    <input type="hidden" name="selectedTime" value="<?php echo htmlspecialchars(urlencode($selectedTime)); ?>">
-                    <input type="hidden" name="selectedClass" value="<?php echo htmlspecialchars(urlencode($selectedClass)); ?>">
-                    <input type="hidden" name="selectedFare" value="<?php echo htmlspecialchars(urlencode($selectedFare)); ?>">
+                <form id="seatSelectionForm" action="payment.php" method="POST">
+                    <input type="hidden" name="originalOrigin" value="<?php echo htmlspecialchars($origin); ?>">
+                    <input type="hidden" name="originalDestination" value="<?php echo htmlspecialchars($destination); ?>">
+                    <input type="hidden" name="originalDepart" value="<?php echo htmlspecialchars($depart); ?>">
+                    <input type="hidden" name="originalTripType" value="<?php echo htmlspecialchars($tripType); ?>">
+                    <input type="hidden" name="originalPassengers" value="<?php echo htmlspecialchars($passengers); ?>">
+                    <input type="hidden" name="originalReturnDate" value="<?php echo htmlspecialchars($returnDate); ?>">
+                    <input type="hidden" name="selectedTime" value="<?php echo htmlspecialchars($selectedTime); ?>">
+                    <input type="hidden" name="selectedClass" value="<?php echo htmlspecialchars($selectedClass); ?>">
+                    <input type="hidden" name="selectedFare" value="<?php echo htmlspecialchars($selectedFare); ?>">
+                    
                     <input type="hidden" name="firstName" value="<?php echo htmlspecialchars($firstName); ?>">
-                    <input type="hidden" name="middleName" value="<?php echo htmlspecialchars($_POST['middleName'] ?? ''); ?>">
+                    <input type="hidden" name="middleName" value="<?php echo htmlspecialchars($middleName); ?>">
                     <input type="hidden" name="lastName" value="<?php echo htmlspecialchars($lastName); ?>">
                     <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
-                    <input type="hidden" name="confirmEmail" value="<?php echo htmlspecialchars($_POST['confirmEmail'] ?? ''); ?>">
                     <input type="hidden" name="mobileNo" value="<?php echo htmlspecialchars($mobileNo); ?>">
-                    <input type="hidden" name="city" value="<?php echo htmlspecialchars($_POST['city'] ?? ''); ?>">
                     <input type="hidden" name="fullAddress" value="<?php echo htmlspecialchars($fullAddress); ?>">
-
+                    
                     <input type="hidden" name="selected_seats_ids" id="selectedSeatsInput" value="">
 
 
@@ -152,7 +138,6 @@
                         <div class="seat-rows-container">
                             <div class="seat-row seat-row-b">
                                 <?php
-                                // Row B1 to B9 (busSeatData indices 0-8)
                                 for ($i = 0; $i < 9; $i++) {
                                     $seat = $busSeatData[$i];
                                     $seat_class = getSeatClass($seat, $selectedSeatIds);
@@ -165,7 +150,6 @@
 
                             <div class="seat-row seat-row-b">
                                 <?php
-                                // Row B10 to B18 (busSeatData indices 9-17)
                                 for ($i = 9; $i < 18; $i++) {
                                     $seat = $busSeatData[$i];
                                     $seat_class = getSeatClass($seat, $selectedSeatIds);
@@ -178,7 +162,6 @@
 
                             <div class="seat-row seat-row-19">
                                 <div class="empty-col-span-9"></div><?php
-                                // Seat 19 (busSeatData index 18)
                                 $seat = $busSeatData[18];
                                 $seat_class = getSeatClass($seat, $selectedSeatIds);
                                 echo '<div class="' . $seat_class . '" data-seat-id="' . htmlspecialchars($seat['id']) . '" data-seat-status="' . htmlspecialchars($seat['status']) . '">';
@@ -189,7 +172,6 @@
 
                             <div class="seat-row seat-row-a">
                                 <?php
-                                // Row A1 to A9 (busSeatData indices 19-27)
                                 for ($i = 19; $i < 28; $i++) {
                                     $seat = $busSeatData[$i];
                                     $seat_class = getSeatClass($seat, $selectedSeatIds);
@@ -202,7 +184,6 @@
 
                             <div class="seat-row seat-row-a">
                                 <?php
-                                // Row A10 to A18 (busSeatData indices 28-36)
                                 for ($i = 28; $i < 37; $i++) {
                                     $seat = $busSeatData[$i];
                                     $seat_class = getSeatClass($seat, $selectedSeatIds);
@@ -225,7 +206,7 @@
                         <div class="legend-item">
                             <div class="legend-square seat--selected"></div> Selected
                         </div>
-                        <div class="legend-item"> <span>Fair:</span> 1600</div>
+                        <div class="legend-item"> <span>Fair:</span>₱<?php echo number_format((float)$selectedFare, 2); ?> </div>
                     </div>
 
                     <div class="form-actions">
@@ -236,18 +217,41 @@
         </div>
     </main>
 
+    <footer>
+        <div class="footerBoxes">
+            <div class="footerBox">
+                <h3>Privacy Policy</h3>
+                <hr>
+                <p>We are committed to protecting your privacy. We will only use the information we collect about you lawfully (in accordance with the Data Protection Act 1998). Please read on if you wish to learn more about our privacy policy.</p>
+            </div>
+
+            <div class="footerBox">
+                <h3>Terms of Service</h3>
+                <hr>
+                <p>By using our service, you agree to provide accurate booking information and comply with our travel and cancellation policies. We are not liable for delays or missed trips caused by user error or third-party issues.</p>
+            </div>
+
+            <div class="footerBox">
+                <h3>Help & Support</h3>
+                <hr>
+                <p>If you have any questions or need assistance, our support team is here to help. Contact us via email or visit our help center for answers to frequently asked questions.</p>
+            </div>
+        </div>
+        <hr>
+        <p class="copy-right">2025 Busket List</p> 
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const seats = document.querySelectorAll('.seat-item');
             const selectedSeatsInput = document.getElementById('selectedSeatsInput');
-            const totalPassengers = parseInt(<?php echo json_encode($passengers); ?>); // Get total passengers from PHP
+            const totalPassengers = parseInt(<?php echo json_encode($passengers); ?>); 
             let selectedSeats = [];
 
             function updateSelectedSeatsInput() {
                 selectedSeatsInput.value = selectedSeats.join(',');
             }
 
-            // Add event listeners to seats for selection
             seats.forEach(seat => {
                 if (seat.dataset.seatStatus !== 'booked') { // Only allow selection if not booked
                     seat.addEventListener('click', function() {

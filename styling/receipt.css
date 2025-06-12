@@ -1,0 +1,426 @@
+body {
+    font-family: 'Montserrat', sans-serif; 
+    background-color: #f0f2f5; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.ticket-container {
+    display: flex;
+    flex-wrap: wrap; 
+    width: 900px; 
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative; 
+}
+
+.ticket-main {
+    flex: 2; 
+    min-width: 550px; 
+    padding: 20px 30px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.ticket-stub {
+    flex: 1; 
+    min-width: 250px; 
+    background-color: #f80000; 
+    color: #fff;
+    padding: 20px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+    font-family: 'Roboto', sans-serif; 
+    gap: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.stub-header {
+    font-size: 1.8em;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stub-details p {
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.stub-details .label {
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+}
+.stub-details p:last-child {
+    margin-bottom: 0;
+}
+
+.ticket-header {
+    background-color: #f80000; 
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    height: 60px;
+}
+
+.bus-logo {
+    margin-right: 15px;
+}
+
+.bus-class {
+    font-size: 1.5rem;
+    /* margin-right: auto;  */
+    width: 250px;
+    /* border: solid black */
+}
+
+.bus-route {
+    font-size: 1rem;
+    opacity: 0.8;
+    margin-right: 0px;
+    /* border: solid black */
+
+}
+
+.bus-route .arrow-separator{
+    color: var(--red); 
+    margin: 0 10px; 
+    font-size: 0.8em; 
+}
+
+.ticket-details {
+    flex-grow: 1; 
+    padding-bottom: 20px; 
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; 
+    margin-bottom: 12px;
+    font-size: 0.95em;
+}
+
+.detail-item {
+    flex: 1; 
+}
+
+.detail-item .label {
+    padding-right: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+.detail-item.price {
+    text-align: right;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #333;
+}
+
+.price .small-text {
+    font-size: 0.7em;
+    font-weight: 400;
+    color: #777;
+}
+
+.detail-item.date {
+    text-align: right;
+}
+
+.name-section {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 15px;
+}
+.name-section .label {
+    font-weight: 600;
+    color: #555;
+    margin-right: 5px;
+}
+
+.total-price {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.total-price .label {
+    font-size: 0.85em;
+    margin-bottom: 5px;
+}
+.total-price .price-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #f80000; 
+}
+
+.status {
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.bill-paid {
+    background-color: #4CAF50; 
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+
+.route-time-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 1em;
+    font-weight: 600;
+    color: #333;
+    margin-top: 15px;
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+}
+
+.route {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #f80000;
+    margin-right: 20px;
+}
+.route .arrow {
+    font-size: 0.8em; 
+    vertical-align: middle;
+    margin: 0 5px;
+    color: #555;
+}
+
+.time-details {
+    display: flex;
+    padding-top: 3px;
+    padding-right: 10px;
+    font-size: 0.9em;
+}
+.time-item .label {
+    font-weight: 400;
+    color: #777;
+    display: block; 
+}
+
+.ticket-separator {
+    width: 20px; 
+    background: radial-gradient(circle, #f0f2f5 6px, transparent 7px) center/14px 100% repeat-y;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(100% - 280px);
+    z-index: 5; 
+}
+
+.ticket-footer {
+    background-color: #f80000; 
+    color: #fff;
+    padding: 10px 30px;
+    font-size: 0.85em;
+    border-bottom-left-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+    font-family: 'Roboto', sans-serif;
+    margin-top: auto; 
+    min-width: 550px; 
+}
+
+.ticket-stub-footer {
+    display: none; 
+    background-color: #f80000;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 0.85em;
+    border-bottom-right-radius: 10px;
+    min-width: 250px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.note {
+    max-width: 60%;
+    line-height: 1.4;
+}
+
+.contact-info {
+    font-weight: 700;
+    white-space: nowrap; 
+}
+.contact-info i {
+    margin-right: 5px;
+}
+
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css");
+
+@media (max-width: 920px) {
+    .ticket-container {
+        flex-direction: column; 
+        width: 100%; 
+        max-width: 580px; 
+        border-radius: 10px; 
+    }
+
+    .ticket-main,
+    .ticket-stub {
+        min-width: unset; 
+        width: 100%; 
+        border-radius: 0; 
+    }
+
+    .ticket-stub {
+        background-color: #f80000; 
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 10px; 
+        border-top-left-radius: 10px; 
+        padding-top: 30px; 
+    }
+
+    .ticket-header {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .ticket-separator {
+        display: none;
+    }
+
+    .qr-code-section {
+        position: static; 
+        transform: none;
+        margin: 20px auto;
+        order: 1; 
+    }
+
+    .ticket-footer {
+        border-bottom-left-radius: 10px; 
+        border-bottom-right-radius: 10px;
+        min-width: unset;
+        width: 100%; 
+        margin-top: 0; 
+        border-radius: 0;
+    }
+
+    .ticket-stub-footer {
+        display: flex;
+        justify-content: center; 
+        align-items: center;
+        border-radius: 0 0 10px 10px; 
+    }
+}
+
+@media (max-width: 600px) {
+    .ticket-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+    }
+    .bus-logo {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    .bus-name {
+        margin-right: 0;
+        margin-bottom: 5px;
+        font-size: 1.3em;
+    }
+    .bus-number {
+        font-size: 0.8em;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+    .detail-item {
+        flex: none;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    .detail-item.price,
+    .detail-item.date,
+    .total-price,
+    .status {
+        text-align: left; 
+        align-items: flex-start;
+    }
+    .total-price .price-value {
+        font-size: 1.5em;
+    }
+
+    .route-time-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .time-details {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .note {
+        max-width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .contact-info {
+        text-align: center;
+        width: 100%;
+    }
+    .ticket-footer {
+        flex-direction: column;
+    }
+}
+
+.home-button-container {
+    position: fixed;
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 1000; 
+}
+
+.home-button {
+    background-color: rgb(255, 242, 61);
+    color: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none; 
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+}
+
+.home-button:hover {
+    background-color: rgb(230, 218, 50); 
+}
