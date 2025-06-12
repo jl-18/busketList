@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Passenger Information - Busket List</title>
-    <link rel="stylesheet" href="style2.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="styling/style2.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <header>
@@ -17,7 +17,7 @@
             </ul>
         </nav>
 
-        <div>pic placeholder</div>
+        <div class="img-placeholder"></div>
 
         <section>
             <div class="book-steps">
@@ -31,17 +31,17 @@
         <div class="customer-form-container">
             <form action="seatSelection.php" method="POST" class="customer-info-form">
                 <?php
-                // Retrieve ALL data from URL parameters passed from bookSelection.php (via GET)
-                $time = htmlspecialchars($_GET['time'] ?? '');
-                $class = htmlspecialchars($_GET['class'] ?? '');
-                $seats = htmlspecialchars($_GET['seats'] ?? '');
-                $fare = htmlspecialchars($_GET['fare'] ?? '');
-                $origin = htmlspecialchars($_GET['origin'] ?? '');
-                $destination = htmlspecialchars($_GET['destination'] ?? '');
-                $depart = htmlspecialchars($_GET['depart'] ?? '');
-                $tripType = htmlspecialchars($_GET['trip-type'] ?? '');
-                $passengers = htmlspecialchars($_GET['passengers'] ?? '');
-                $returnDate = htmlspecialchars($_GET['return'] ?? '');
+                // Retrieve ALL data from URL parameters passed from bookSelection.php
+                $time = htmlspecialchars(urldecode($_GET['time'] ?? ''));
+                $class = htmlspecialchars(urldecode($_GET['class'] ?? ''));
+                $seats = htmlspecialchars(urldecode($_GET['seats'] ?? ''));
+                $fare = htmlspecialchars(urldecode($_GET['fare'] ?? ''));
+                $origin = htmlspecialchars(urldecode($_GET['origin'] ?? ''));
+                $destination = htmlspecialchars(urldecode($_GET['destination'] ?? ''));
+                $depart = htmlspecialchars(urldecode($_GET['depart'] ?? ''));
+                $tripType = htmlspecialchars(urldecode($_GET['trip-type'] ?? ''));
+                $passengers = htmlspecialchars(urldecode($_GET['passengers'] ?? ''));
+                $returnDate = htmlspecialchars(urldecode($_GET['return'] ?? ''));
                 ?>
 
                 <input type="hidden" name="selectedTime" value="<?php echo $time; ?>">
@@ -90,7 +90,7 @@
 
                 <div class="form-actions">
                     <?php
-                    // Reconstruct the back link to bookSelection.php with all original search parameters
+                    // back link to bookSelection.php with all original search parameters
                     $back_params = [
                         'origin' => urlencode($origin),
                         'destination' => urlencode($destination),
@@ -103,7 +103,7 @@
                     }
                     $back_query_string = http_build_query($back_params);
                     ?>
-                    <a href="bookSelection.php?<?php echo $back_query_string; ?>" class="back-link">← Back to Step 1</a>
+                    <a href="bookSelection.php?<?php echo $back_query_string; ?>" class="back-link"> Back to Step 1</a>
                     <button type="submit" class="next-button">Next</button>
                 </div>
             </form>
@@ -112,6 +112,29 @@
 
 
     </main>
+    <footer>
+        <div class="footerBoxes">
+            <div class="footerBox">
+                <h3>Privacy Policy</h3>
+                <hr>
+                <p>We are committed to protecting your privacy. We will only use the information we collect about you lawfully (in accordance with the Data Protection Act 1998). Please read on if you wish to learn more about our privacy policy.</p>
+            </div>
+
+            <div class="footerBox">
+                <h3>Terms of Service</h3>
+                <hr>
+                <p>By using our service, you agree to provide accurate booking information and comply with our travel and cancellation policies. We are not liable for delays or missed trips caused by user error or third-party issues.</p>
+            </div>
+
+            <div class="footerBox">
+                <h3>Help & Support</h3>
+                <hr>
+                <p>If you have any questions or need assistance, our support team is here to help. Contact us via email or visit our help center for answers to frequently asked questions.</p>
+            </div>
+        </div>
+        <hr>
+        <p class="copy-right">2025 Busket List</p> 
+    </footer>
 
 
 </body>
