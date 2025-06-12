@@ -3,106 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Busket List</title>
+    <link rel="stylesheet" href="styling/index.css">
+    <title>Bucket List</title>
 </head>
 <body>
-    <header>
-        <nav>
-            <h1>Busket List</h1>
-            <ul>
-                <li>Home</li>
-                <li>Services</li>
-                <li>About</li>
-            </ul>
-        </nav>
+    <div class="main-wrapper">
+        <div class="hero-section"></div>
 
-        <section>
-            <img src="/busketList/images/img1.jpg">
-
-            <div class="overlay"></div>
-            <div class="header-text">
-                <h1>Busket List</h1>
-                <p>Ride your way through life's bucket list!</p>
-            </div>
-        </section>
-    </header>
-
-    <main>
-        <div class="trip-info">
-            <form action="bookSelection.php" method="GET">
-                <div class="trip-types">
-                    <input type="radio" id="one-way" name="trip-type" value="one-way">
-                    <label for="one-way">One-way</label>
-                    <input type="radio" id="round-trip" name="trip-type" value="round-trip">
-                    <label for="round-trip">Round-trip</label>
-                </div>
-
-                <div class="trip-route">
-                    <div class="trip-origin">
-                        <label for="origin">Origin</label>
-                        <select name="origin" id="origin">
-                            <option value="manila">Manila</option>
-                            <option value="laguna">Laguna</option>
-                            <option value="cavite">Cavite</option>
-                            <option value="pampanga">Pampanga</option>
-                        </select>
-                    </div>
-
-                    <div class="trip-destination">
-                        <label for="destination">Destination</label>
-                        <select name="destination" id="destination">
-                            <option value="laguna">Laguna</option>
-                            <option value="baguio">Baguio</option>
-                            <option value="cavite">Cavite</option>
-                            <option value="pampanga">Pampanga</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="trip-schedule">
-                    <label for="depart">Depart</label>
-                    <input type="date" id="depart" name="depart">
-
-                    <label for="return">Return</label>
-                    <input type="date" id="return" name="return">
-                </div>
-
-                <div class="trip-passengers">
-                    <label for="passengers">Passengers</label>
-                    <button type="button" onclick="decrementValue">-</button>
-                    <input type="number" id="passengers" value="1" min="0" />
-                    <button type="button" onclick="increamentValue">+</button>
-                </div>
-                <br>
-                <input type="submit" href="">
-            </form>
-        </div>
-    </main>
-
-    <footer>
-        <div class="footerBoxes">
-            <div class="footerBox">
-                <h3>Privacy Policy</h3>
-                <hr>
-                <p>We are committed to protecting your privacy. We will only use the information we collect about you lawfully (in accordance with the Data Protection Act 1998). Please read on if you wish to learn more about our privacy policy.</p>
+        <div class="destination-container">
+            <div class="destination-header">
+                <h1>Bucket List</h1>
+                <p>Please select your destination.</p>
             </div>
 
-            <div class="footerBox">
-                <h3>Terms of Service</h3>
-                <hr>
-                <p>By using our service, you agree to provide accurate booking information and comply with our travel and cancellation policies. We are not liable for delays or missed trips caused by user error or third-party issues.</p>
-            </div>
-
-            <div class="footerBox">
-                <h3>Help & Support</h3>
-                <hr>
-                <p>If you have any questions or need assistance, our support team is here to help. Contact us via email or visit our help center for answers to frequently asked questions.</p>
+            <div class="destination-links">
+                <a class="destination-button user-button" href="hero.html" aria-label="Go to User Dashboard">
+                    <span>User</span>
+                </a>
+                <a class="destination-button admin-button" aria-label="Go to Admin Dashboard">
+                    <span>Admin</span>
+                </a>
             </div>
         </div>
-        <hr>
-        <p class="copy-right">2025 Busket List</p> 
-    </footer>
-    
+    </div>
 </body>
 </html>
