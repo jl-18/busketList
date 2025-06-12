@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Your Trip - Busket List</title>
-    <link rel="stylesheet" href="style2.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="styling/style2.css?php echo time(); ?>">
 </head>
 <body>
     <header>
@@ -17,7 +17,7 @@
             </ul>
         </nav>
 
-        <div>pic placeholder</div>
+        <div class="img-placeholder"></div>
 
         <section>
             <div class="book-steps">
@@ -29,15 +29,13 @@
     <main>
         <div class="book-selection">
             <?php
-            // Retrieve ALL initial search details from URL parameters (from index.html)
-            $origin = htmlspecialchars($_GET['origin'] ?? '');
-            $destination = htmlspecialchars($_GET['destination'] ?? '');
-            $depart = htmlspecialchars($_GET['depart'] ?? '');
-            $tripType = htmlspecialchars($_GET['trip-type'] ?? '');
-            $passengers = htmlspecialchars($_GET['passengers'] ?? '1'); // Default to 1
-            $returnDate = htmlspecialchars($_GET['return'] ?? ''); // Get return date if it exists
+            $origin = htmlspecialchars(urldecode($_GET['origin'] ?? ''));
+            $destination = htmlspecialchars(urldecode($_GET['destination'] ?? ''));
+            $depart = htmlspecialchars(urldecode($_GET['depart'] ?? ''));
+            $tripType = htmlspecialchars(urldecode($_GET['trip-type'] ?? ''));
+            $passengers = htmlspecialchars(urldecode($_GET['passengers'] ?? '1')); // Default to 1
+            $returnDate = htmlspecialchars(urldecode($_GET['return'] ?? '')); 
 
-            // Format for display
             $formattedOrigin = strtoupper($origin);
             $formattedDestination = strtoupper($destination);
             $displayDepartDate = $depart ?: 'N/A';
@@ -71,7 +69,7 @@
                 </thead>
                 <tbody>
                     <?php
-                    // Dummy data for demonstration. In a real application, this would come from a database.
+                    // Dummy data, replace with database
                     $trips = [
                         ['time' => '12:00 AM', 'class' => 'Regular Aircon (EXPRESS)', 'seats' => 38, 'fare' => 586.00],
                         ['time' => '07:00 AM', 'class' => 'Regular Aircon (EXPRESS)', 'seats' => 38, 'fare' => 586.00],
@@ -83,13 +81,11 @@
                     ];
 
                     foreach ($trips as $trip) {
-                        // Prepare ALL parameters to be passed to passenger.php
                         $params = [
                             'time' => urlencode($trip['time']),
                             'class' => urlencode($trip['class']),
                             'seats' => urlencode($trip['seats']),
                             'fare' => urlencode($trip['fare']),
-                            // Add original search parameters
                             'origin' => urlencode($origin),
                             'destination' => urlencode($destination),
                             'depart' => urlencode($depart),
@@ -100,7 +96,7 @@
                             $params['return'] = urlencode($returnDate);
                         }
 
-                        $query_string = http_build_query($params); // Builds the URL query string
+                        $query_string = http_build_query($params); 
 
                         echo '<tr>';
                         echo '<td>' . htmlspecialchars($trip['time']) . '</td>';
