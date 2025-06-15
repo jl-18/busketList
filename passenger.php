@@ -12,7 +12,6 @@
             <h1>Busket List</h1>
             <ul>
                 <li>Home</li>
-                <li>Services</li>
                 <li>About</li>
             </ul>
         </nav>
@@ -70,6 +69,15 @@
                             <label for="lastName" class="required">Last Name:</label>
                             <input type="text" id="lastName" name="lastName" required>
                         </div>
+                        <div class="form-group">
+                            <label for="discount">Discount:</label>
+                            <select name="discount" id="discount">
+                                <option value="" selected disabled hidden id="select-hidden">Choose the appropriate discount</option>
+                                <option value="pwd">PWD</option>
+                                <option value="senior">Senior Citizen</option>
+                            </select>
+                        </div>
+                        
                     </div>
 
                     <div class="form-column">

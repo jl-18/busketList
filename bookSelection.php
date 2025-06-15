@@ -12,7 +12,6 @@
             <h1>Busket List</h1>
             <ul>
                 <li>Home</li>
-                <li>Services</li>
                 <li>About</li>
             </ul>
         </nav>

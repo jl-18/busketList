@@ -12,7 +12,6 @@
             <h1>Busket List</h1>
             <ul>
                 <li>Home</li>
-                <li>Services</li>
                 <li>About</li>
             </ul>
         </nav>
@@ -65,7 +64,7 @@
                         <label for="depart">Depart</label>
                         <input type="date" id="depart" name="depart">
                     </div>
-                    
+
                     <div class="trip-schedule">
                         <label for="return">Return</label>
                         <input type="date" id="return" name="return">
@@ -74,15 +73,16 @@
 
                 <div class="trip-passengers">
                     <div class="trip-passengers-label"><label for="passengers">Passengers</label></div>
-                    
+
                     <div class="trip-passengers-button">
-                        <button type="button" onclick="decrementValue">-</button>
+                        <button type="button" onclick="decrementValue()">-</button>
                         <input type="number" id="passengers" value="1" min="0" />
-                        <button type="button" onclick="increamentValue">+</button>
+                        <button type="button" onclick="incrementValue()">+</button>
                     </div>
                 </div>
                 <br>
-                <input type="submit" href="">
+                <input type="submit" value="Submit">
+                <button type="button" id="manageBookingsBtn">Manage my bookings</button>
             </form>
         </div>
     </main>
@@ -108,8 +108,59 @@
             </div>
         </div>
         <hr>
-        <p class="copy-right">2025 Busket List</p> 
+        <p class="copy-right">2025 Busket List</p>
     </footer>
-    
+
+    <div id="manageBookingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Manage my bookings</h2>
+            <div class="tab-buttons">
+                <button class="active">Change Schedule</button>
+                <button>See invoice</button>
+            </div>
+            <form>
+                <div class="modal-form-group">
+                    <label for="trip-ID">Trip ID:</label>
+                    <small>(No. from the invoice presented to you)</small>
+                    <input type="text" id="trip-ID" name="trip-ID">
+                </div>
+                <div class="modal-form-group">
+                    <label for="mobileNumber">Mobile Number:</label>
+                    <small>(Number used in your online booking transaction)</small>
+                    <input type="text" id="mobileNumber" name="mobileNumber">
+                </div>
+                <button type="submit" class="modal-submit-button">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("manageBookingsModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("manageBookingsBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close-button")[0];
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function() {
+            modal.style.display = "flex"; 
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>

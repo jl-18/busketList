@@ -66,7 +66,7 @@ nav ul {
     /* border: 3px solid palegreen; */
     flex-direction: row;
     justify-content: space-between;
-    width: 400px;
+    width: 200px;
 }
 
 section {
@@ -258,7 +258,8 @@ form {
 
 .form-group input[type="text"],
 .form-group input[type="email"],
-.form-group input[type="tel"] {
+.form-group input[type="tel"],
+.form-group select {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #ccc;
@@ -269,7 +270,8 @@ form {
 
 .form-group input[type="text"]:focus,
 .form-group input[type="email"]:focus,
-.form-group input[type="tel"]:focus {
+.form-group input[type="tel"]:focus,
+.form-group select:focus {
     border-color: var(--red);
     outline: none;
     box-shadow: 0 0 0 3px rgba(173, 17, 21, 0.2);
