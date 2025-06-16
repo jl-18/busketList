@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Your Trip - Busket List</title>
-    <link rel="stylesheet" href="styling/style2.css?php echo time(); ?>">
+    <link rel="stylesheet" href="styling/style2.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <header>

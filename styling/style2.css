@@ -287,6 +287,13 @@ form {
     padding-top: 20px;
 }
 
+.payment-page {
+    display: flex;
+    justify-content: center; /* Centers the button */
+    width: 100%; /* Ensures full width */
+    padding: 20px 0;
+}
+
 .back-link {
     color: var(--red);
     text-decoration: none;
@@ -376,6 +383,15 @@ footer .splitter {
     border: 1px solid rgb(94, 92, 92);
 }
 
+.form-container {
+    max-width: 600px; /* Adjust size */
+    margin: 0 auto; /* Centers it */
+    padding: 20px; /* Adds spacing */
+    background-color: #f8f8f8; /* Light box color */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Adds subtle shadow */
+}
+
 .copy-right {
     align-items: center;
     font-size: 13.5px;
@@ -384,6 +400,11 @@ footer .splitter {
     padding: 10px;
 }
 
+#seatSelectionForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 .seat-selection-container {
     background-color: var(--white);
@@ -426,6 +447,9 @@ footer .splitter {
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-neutral-200);
     margin-bottom: 20px;
+    justify-content: center;
+    max-width: 600px;
+    overflow: hidden;
 }
 
 .steering-wheel-column {
