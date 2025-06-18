@@ -67,7 +67,6 @@ if ($paymentAmount < $totalFare) {
                 <span class="label">Passenger Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1) . '. ' : '') . $lastName; ?>
             </div>
             <div class="detail-row">
-                <div class="detail-item"><span class="label">Seat No.:</span> <?php echo $selectedSeatsString; ?></div>
                 <div class="detail-item total-price">
                     <span class="label">Total Price</span>
                     <span class="price-value">₱<?php echo number_format($totalFare, 2); ?></span>
@@ -96,7 +95,6 @@ if ($paymentAmount < $totalFare) {
             <p><span class="label">From:</span> <?php echo $origin; ?></p>
             <p><span class="label">To:</span> <?php echo $destination; ?></p>
             <p><span class="label">Departure:</span> <?php echo $selectedTime; ?></p>
-            <p><span class="label">Seats:</span> <?php echo $selectedSeatsString; ?></p>
             <p><span class="label">Passenger(s):</span> <?php echo $passengers; ?> Only</p>
             <p><span class="label">Total:</span> ₱<?php echo number_format($totalFare, 2); ?></p>
         </div>

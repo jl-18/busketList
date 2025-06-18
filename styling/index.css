@@ -152,3 +152,24 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(255, 210, 63, 0.4);
 }
+
+.back-link {
+    color: var(--red);
+    /* margin-left: 400px; */
+    text-decoration: none;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+}
+
+.back-link:hover {
+    margin-left: 3px;
+
+}
+
+.back-link::before {
+    content: '← ';
+    margin-right: 5px;
+    font-size: 1.2em;
+}

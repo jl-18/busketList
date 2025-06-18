@@ -111,7 +111,7 @@ section img {
 }
 
 main {
-    padding-bottom: 60px;
+    padding-bottom: 30px;
 }
 form {
     display: flex;
@@ -207,6 +207,7 @@ form {
     display: flex;
     flex-direction: row;
     gap: 30px;
+    margin-top: 20px;
 }
 
 .trip-schedule {
@@ -509,3 +510,23 @@ footer .splitter {
     padding: 10px;
 }
 
+.back-link {
+    color: var(--red);
+    /* margin-left: 400px; */
+    text-decoration: none;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    transition: margin-left 0.3s ease;
+}
+
+.back-link:hover {
+    margin-left: 3px;
+
+}
+
+.back-link::before {
+    content: '← ';
+    margin-right: 5px;
+    font-size: 1.2em;
+}
