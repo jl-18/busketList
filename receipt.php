@@ -152,7 +152,7 @@ if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routei
     </div>
 </div>
 <div class="home-button-container">
-    <a href="hero.php" class="home-button">Return to Home</a>
+    <a href="index.html" class="home-button">Return to Home</a>
 </div>
 </body>
 </html>

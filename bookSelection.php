@@ -73,19 +73,19 @@ $result = $stmt->get_result();
 ?>
 
 <header>
-  <nav>
-    <h1>Busket List</h1>
-    <ul>
-      <li><a href="hero.php">Home</a></li>
-      <li><a href="#about-section">About</a></li>
-    </ul>
-  </nav>
-  <div class="img-placeholder"></div>
-  <section>
-    <div class="book-steps">
-      <p><span>Step 1: </span>Choose a departure schedule</p>
-    </div>
-  </section>
+    <nav>
+        <h1>Busket List</h1>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#about-section">About</a></li>
+        </ul>
+    </nav>
+    <div class="img-placeholder"></div>
+    <section>
+        <div class="book-steps">
+            <p><span>Step 1: </span>Choose a departure schedule</p>
+        </div>
+    </section>
 </header>
 
 <main>
