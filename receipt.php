@@ -109,7 +109,7 @@ if ($paymentAmount < $totalFare) {
     </div>
 </div>
 <div class="home-button-container">
-    <a href="hero.html" class="home-button">Return to Home</a>
+    <a href="hero.php" class="home-button">Return to Home</a>
 </div>
 </body>
 </html>

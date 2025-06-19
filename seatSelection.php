@@ -93,7 +93,7 @@ function getSeatClass($seatId, $status) {
     <nav>
         <h1>Busket List</h1>
         <ul>
-            <li><a href="hero.html">Home</a></li>
+            <li><a href="hero.php">Home</a></li>
             <li><a href="#about-section">About</a></li>
         </ul>
     </nav>
