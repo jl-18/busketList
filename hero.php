@@ -37,6 +37,10 @@
     </style>
   </head>
   <body>
+    <?php include 'db_connect.php';
+      $locations = getUniqueLocations($conn);
+    ?>
+
     <header>
       <nav>
         <h1>Busket List</h1>
@@ -80,37 +84,30 @@
             <div class="trip-origin">
               <select name="origin" id="origin" required>
                 <option value="" selected disabled hidden>Origin</option>
-                <option value="manila">Manila</option>
-                <option value="laguna">Laguna</option>
-                <option value="cavite">Cavite</option>
-                <option value="pampanga">Pampanga</option>
+                <?php foreach ($locations as $location): ?>
+                  <option value="<?php echo htmlspecialchars($location); ?>">
+                      <?php echo htmlspecialchars($location); ?>
+                  </option>
+                <?php endforeach; ?>
               </select>
             </div>
 
             <div class="trip-destination">
               <select name="destination" id="destination" required>
                 <option value="" selected disabled hidden>Destination</option>
-                <option value="laguna">Laguna</option>
-                <option value="baguio">Baguio</option>
-                <option value="cavite">Cavite</option>
-                <option value="pampanga">Pampanga</option>
               </select>
             </div>
           </div>
+
+          <?php 
+          // Close connection at the end
+          $conn->close();
+          ?>
 
           <div class="trip-schedules">
             <div class="trip-schedule">
               <label for="depart">Depart</label>
               <input type="date" id="depart" name="depart" required />
-            </div>
-
-            <div
-              class="trip-schedule"
-              id="return-date-container"
-              style="display: none"
-            >
-              <label for="return">Return</label>
-              <input type="date" id="return" name="return" />
             </div>
           </div>
 
@@ -142,9 +139,7 @@
         </form>
       </div>
 
-      <a href="admin.php" class="back-link" style="margin-left: 50px"
-        >Back to navigation page</a
-      >
+    
     </main>
 
     <footer id="about-section">
@@ -275,6 +270,29 @@
               "Return date must be after the departure date.";
           }
         });
+
+      document.getElementById("origin").addEventListener("change", function () {
+  const origin = this.value;
+
+        fetch("get_destinations.php?origin=" + encodeURIComponent(origin))
+          .then((response) => response.json())
+          .then((data) => {
+            const destinationSelect = document.getElementById("destination");
+            destinationSelect.innerHTML =
+              '<option value="" selected disabled hidden>Destination</option>';
+
+            data.forEach(function (destination) {
+              const option = document.createElement("option");
+              option.value = destination;
+              option.textContent = destination;
+              destinationSelect.appendChild(option);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching destinations:", error);
+          });
+      });
+
     </script>
   </body>
 </html>
