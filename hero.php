@@ -1,3 +1,7 @@
+<?php include 'db_connect.php';
+  session_start();
+  $locations = getUniqueLocations($conn);
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -21,10 +25,6 @@
     </style>
   </head>
   <body>
-    <?php include 'db_connect.php';
-      $locations = getUniqueLocations($conn);
-    ?>
-
     <header>
       <nav>
         <h1>Busket List</h1>

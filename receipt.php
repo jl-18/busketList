@@ -1,41 +1,82 @@
 <?php
 session_start();
+include 'db_connect.php';
 
 function safe($key, $array) {
     return htmlspecialchars(urldecode($array[$key] ?? ''));
 }
 
+// Retrieve session values for trip and passenger.
 $trip = $_SESSION['trip'] ?? [];
-$origin = strtoupper(safe('origin', $trip));
-$destination = strtoupper(safe('destination', $trip));
-$depart = safe('depart', $trip);
-$tripType = ucwords(str_replace('-', ' ', safe('trip_type', $trip)));
-$passengers = intval(safe('passengers', $trip));
-$returnDate = safe('return', $trip);
-
-$selectedTime = safe('time', $trip);
-$selectedClass = safe('class', $trip);
-$availableSeats = intval(safe('seats', $trip));
-$fare = floatval(safe('fare', $trip));
-
 $passenger = $_SESSION['passenger'] ?? [];
-$firstName = safe('firstName', $passenger);
-$middleName = safe('middleName', $passenger);
-$lastName = safe('lastName', $passenger);
-$email = safe('email', $passenger);
-$mobileNo = safe('mobileNo', $passenger);
+
+$origin      = strtoupper(safe('origin', $trip));
+$destination = strtoupper(safe('destination', $trip));
+$passengers  = intval(safe('passengers', $trip));
+
+// Schedule details (set in bookingSelection.php).
+$selectedTime  = safe('time', $trip);
+$selectedClass = safe('class', $trip);
+$sched_id      = safe('sched_id', $trip);
+$fare          = floatval(safe('fare', $trip));
+
+// Passenger details for DB update.
+$firstName   = safe('firstName', $passenger);
+$middleName  = safe('middleName', $passenger);
+$lastName    = safe('lastName', $passenger);
+$email       = safe('email', $passenger);
+$mobileNo    = safe('mobileNo', $passenger);
 $fullAddress = safe('fullAddress', $passenger);
-$discount = safe('discount', $passenger);
 
-$selectedSeatsString = htmlspecialchars($_SESSION['selected_seats'] ?? '');
-$selectedSeatsArray = explode(',', $selectedSeatsString);
+$totalFare = floatval($_SESSION['totalFare'] ?? 0);
+$bookingid = $_SESSION['trip_id'];
+$depart = safe('depart', $_SESSION['trip']);
 
-$totalFare = $passengers * $fare;
-$paymentAmount = floatval($_SESSION['final_payment'] ?? 0);
-$trip_id = $_SESSION['trip_id'] ?? 'TRIP' . date('YmdHis');
+// Check if the passenger record (by passengerid) already exists.
+$passenger_id = $_SESSION['passenger_id'] ?? ''; 
+if (!empty($passenger_id)) {
+    $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM passenger WHERE passengerid = ?");
+    $stmt->bind_param("s", $passenger_id);
+    $stmt->execute();
+    $stmt->bind_result($pCount);
+    $stmt->fetch();
+    $stmt->close();
 
-if ($paymentAmount < $totalFare) {
-    die('<h2 style="color: red; text-align: center;">Insufficient payment. Please go back and pay the correct amount.</h2>');
+    if ($pCount == 0) {
+        $stmt = $conn->prepare("INSERT INTO passenger (passengerid, lastname, firstname, middlename, email, phonenumber, address) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssss", $passenger_id, $lastName, $firstName, $middleName, $email, $mobileNo, $fullAddress);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+// Retrieve route ID from routes table using origin and destination.
+$routeid = null;
+$stmt = $conn->prepare("SELECT routeid FROM routes WHERE origin = ? AND destination = ? LIMIT 1");
+if ($stmt) {
+    $stmt->bind_param("ss", $origin, $destination);
+    $stmt->execute();
+    $stmt->bind_result($routeid);
+    $stmt->fetch();
+    $stmt->close();
+}
+
+// Check if a booking record with this bookingid already exists.
+$stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM booking WHERE bookingid = ?");
+$stmt->bind_param("s", $bookingid);
+$stmt->execute();
+$stmt->bind_result($bCount);
+$stmt->fetch();
+$stmt->close();
+
+$bookingDate = date('Y-m-d');
+$bookingTime = date('H:i:s');
+
+if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routeid)) {
+    $stmt = $conn->prepare("INSERT INTO booking (bookingid, passengerid, schedid, routeid, bookingdate, bookingtime) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssisss", $bookingid, $passenger_id, $sched_id, $routeid, $bookingDate, $bookingTime);
+    $stmt->execute();
+    $stmt->close();
 }
 ?>
 <!DOCTYPE html>
@@ -60,11 +101,14 @@ if ($paymentAmount < $totalFare) {
 
         <div class="ticket-details">
             <div class="detail-row">
-                <div class="detail-item"><span class="label">Trip ID:</span> <?php echo $trip_id; ?></div>
-                <div class="detail-item price">₱<?php echo number_format($fare, 2); ?> <span class="small-text">/seat</span></div>
+                <div class="detail-item"><span class="label">Booking ID:</span> <?php echo $bookingid; ?></div>
+                
             </div>
-            <div class="detail-row name-section">
-                <span class="label">Passenger Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1) . '. ' : '') . $lastName; ?>
+            <div class="detail-row ">
+                <div class="detail-item"><span class="label">Passenger Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1) . '. ' : '') . $lastName; ?></div>
+            </div>
+            <div class="detail-row ">
+                <div class="detail-item"><span class="label">Passenger Count:</span> <?php echo $passengers; ?> Only</div>
             </div>
             <div class="detail-row">
                 <div class="detail-item total-price">
@@ -73,7 +117,6 @@ if ($paymentAmount < $totalFare) {
                 </div>
             </div>
             <div class="detail-row">
-                <div class="detail-item"><span class="label">Passenger Count:</span> <?php echo $passengers; ?> Only</div>
                 <div class="detail-item status">
                     <div class="bill-paid"><i class="fas fa-check-circle"></i> Bill Paid</div>
                 </div>
@@ -81,7 +124,7 @@ if ($paymentAmount < $totalFare) {
             <div class="route-time-section">
                 <div class="route"><?php echo $origin; ?> <span class="arrow">►</span> <?php echo $destination; ?></div>
                 <div class="time-details">
-                    <div class="time-item"><span class="label">Departure:</span> <?php echo $selectedTime; ?></div>
+                    <div class="time-item"><span class="label">Departure:</span> <?php echo $selectedTime ? date('H:i', strtotime($selectedTime)) : 'N/A'; ?></div>
                 </div>
             </div>
         </div>
@@ -90,11 +133,11 @@ if ($paymentAmount < $totalFare) {
     <div class="ticket-stub">
         <div class="stub-header">Bus Ticket</div>
         <div class="stub-details">
-            <p><span class="label">Trip ID:</span> <?php echo $trip_id; ?></p>
-            <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1) . '. ' : '') . $lastName; ?></p>
+            <p><span class="label">Booking ID:</span> <?php echo $bookingid; ?></p>
+            <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1).'. ' : '') . $lastName; ?></p>
             <p><span class="label">From:</span> <?php echo $origin; ?></p>
             <p><span class="label">To:</span> <?php echo $destination; ?></p>
-            <p><span class="label">Departure:</span> <?php echo $selectedTime; ?></p>
+            <p><span class="label">Departure:</span> <?php echo $depart; ?></p>
             <p><span class="label">Passenger(s):</span> <?php echo $passengers; ?> Only</p>
             <p><span class="label">Total:</span> ₱<?php echo number_format($totalFare, 2); ?></p>
         </div>
