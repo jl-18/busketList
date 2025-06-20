@@ -2,176 +2,188 @@
 session_start();
 require_once 'db_connect.php';
 
-$fareSuccess = $fareError = "";
+$busID = $_GET['busid'] ?? null;
+$busDetails = null;
+$currentFare = null;
+$routeOrigins = [];
+$routeDestinations = [];
+$notice = "";
+$origin = $_POST['origin'] ?? null;
+$destination = $_POST['destination'] ?? null;
+$newFare = $_POST['fare'] ?? null;
 
-// Handle fare update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $origin = $_POST['origin'] ?? '';
-    $destination = $_POST['destination'] ?? '';
-    $fare = $_POST['fare'] ?? '';
+if ($busID) {
+    $busQuery = $conn->prepare("SELECT b.busid, bt.description, bt.seatcap, r.routeid, r.origin, r.destination, bt.bustypeid FROM bus b JOIN bustype bt ON b.bustypeid = bt.bustypeid JOIN routes r ON b.routeid = r.routeid WHERE b.busid = ?");
+    $busQuery->bind_param("i", $busID);
+    $busQuery->execute();
+    $busDetails = $busQuery->get_result()->fetch_assoc();
+    $busQuery->close();
 
-    if ($origin && $destination && is_numeric($fare)) {
-        // Get routeid from routes table
-        $stmt = $conn->prepare("SELECT routeid FROM routes WHERE origin = ? AND destination = ?");
-        $stmt->bind_param("ss", $origin, $destination);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $route = $result->fetch_assoc();
-            $routeid = $route['routeid'];
-
-            // Update fare in schedmatrix
-            $update = $conn->prepare("UPDATE schedmatrix SET fare = ? WHERE routeid = ?");
-            $update->bind_param("di", $fare, $routeid);
-            if ($update->execute()) {
-                $fareSuccess = "Fare updated successfully.";
-            } else {
-                $fareError = "Failed to update fare.";
-            }
-            $update->close();
-        } else {
-            $fareError = "Route not found. Please make sure the origin and destination exist.";
-        }
-
-        $stmt->close();
-    } else {
-        $fareError = "Please provide valid origin, destination, and fare.";
+    if ($busDetails) {
+        $routeOrigins[] = $busDetails['origin'];
+        $routeDestinations[] = $busDetails['destination'];
     }
 }
 
-// Optional: use function if available
-$locations = function_exists('getUniqueLocations') ? getUniqueLocations($conn) : [];
+// Fetch current fare if origin, destination, and busID are set
+if ($origin && $destination && $busID) {
+    $getFareQuery = $conn->prepare("SELECT fm.fareamount FROM farematrix fm JOIN routes r ON fm.routeid = r.routeid JOIN bus b ON b.routeid = r.routeid AND b.bustypeid = fm.bustypeid WHERE r.origin = ? AND r.destination = ? AND b.busid = ?");
+    $getFareQuery->bind_param("ssi", $origin, $destination, $busID);
+    $getFareQuery->execute();
+    $result = $getFareQuery->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $currentFare = $row['fareamount'];
+    }
+    $getFareQuery->close();
+}
+
+// Only update fare if form is fully submitted with a value
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID && $newFare !== null && $newFare !== '') {
+    $fareQuery = $conn->prepare("SELECT fm.fareid FROM farematrix fm JOIN routes r ON fm.routeid = r.routeid JOIN bus b ON b.routeid = r.routeid AND b.bustypeid = fm.bustypeid WHERE r.origin = ? AND r.destination = ? AND b.busid = ?");
+    $fareQuery->bind_param("ssi", $origin, $destination, $busID);
+    $fareQuery->execute();
+    $result = $fareQuery->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $fareid = $row['fareid'];
+        $updateQuery = $conn->prepare("UPDATE farematrix SET fareamount = ? WHERE fareid = ?");
+        $updateQuery->bind_param("di", $newFare, $fareid);
+        $updateQuery->execute();
+        $updateQuery->close();
+        $notice = "Fare updated successfully.";
+        $currentFare = $newFare; // show the updated value immediately
+    }
+    $fareQuery->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fare Matrix - Busket List</title>
-  <link rel="stylesheet" href="styling/recordManagement.css?v=<?php echo time(); ?>" />
+  <link rel="stylesheet" href="styling/recordManagement.css?v=<?php echo time(); ?>">
   <style>
-    html, body {
-      height: auto;
-      min-height: 100%;
-      overflow-x: hidden;
+    html, body { height: auto; min-height: 100%; overflow-x: hidden; }
+    nav ul li a { text-decoration: none; color: inherit; }
+    nav ul li a:hover { color: #555; }
+    footer { margin-top: 40px; }
+    .form-groups { max-width: 500px; margin: 0 auto; text-align: left; }
+    .form-group label { display: block; margin-bottom: 5px; }
+    .form-group select, .form-group input[type="number"], .form-group input[type="text"] {
+      width: 100%; padding: 8px; margin-bottom: 15px;
     }
-    .message-success {
-      color: green;
-      margin-bottom: 10px;
-    }
-    .message-error {
-      color: red;
-      margin-bottom: 10px;
-    }
-    nav ul li a {
-      text-decoration: none;
-      color: inherit;
-    }
-    nav ul li a:hover {
-      color: #555;
-    }
+    .submit-button { display: block; margin-top: 10px; padding: 10px 20px; }
+    .notice { text-align: center; margin-top: 10px; color: green; }
   </style>
 </head>
 <body>
-  <header>
-    <nav class="main-navbar">
-      <h1>Busket List</h1>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="#about-section">About</a></li>
-      </ul>
-    </nav>
-    <div class="img-placeholder"></div>
-    <section>
-      <nav class="admin-navbar">
-        <ul>
-          <li><a href="recordManagement.php">Bus Records</a></li>
-          <li><a href="fareMatrix.php">Fare Matrix</a></li>
-          <li><a href="schedMatrix.php">Schedule Matrix</a></li>
-          <li><a href="routeMatrix.php">Route Matrix</a></li>
-        </ul>
-      </nav>
-    </section>
-  </header>
+<header>
+  <nav class="main-navbar">
+    <h1>Busket List</h1>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#about-section">About</a></li>
+    </ul>
+  </nav>
+  <div class="img-placeholder"></div>
+</header>
 
-  <main>
-    <form method="POST" action="fareMatrix.php">
-      <div class="form-groups">
-        <h1>Update Fare</h1>
-        <?php if ($fareSuccess) echo "<p class='message-success'>$fareSuccess</p>"; ?>
-        <?php if ($fareError) echo "<p class='message-error'>$fareError</p>"; ?>
+<section>
+  <nav class="admin-navbar">
+    <ul>
+      <li><a href="recordManagement.php">Bus Records</a></li>
+      <li><a href="fareMatrix.php">Fare Matrix</a></li>
+      <li><a href="schedMatrix.php">Schedule Matrix</a></li>
+      <li><a href="routeMatrix.php">Route Matrix</a></li>
+    </ul>
+  </nav>
+</section>
 
-        <div class="form-group">
-          <label for="origin">Origin:</label>
-          <select name="origin" id="origin" required>
-            <option value="" selected disabled>Select origin</option>
-            <?php
-            foreach ($locations as $loc) {
-                echo "<option value=\"$loc\">" . ucfirst($loc) . "</option>";
-            }
-            ?>
-          </select>
-        </div>
+<main>
+  <form method="POST">
+    <div class="form-groups">
+      <h1>Update Fare</h1>
 
-        <div class="form-group">
-          <label for="destination">Destination:</label>
-          <select name="destination" id="destination" required>
-            <option value="" selected disabled>Select destination</option>
-            <?php
-            foreach ($locations as $loc) {
-                echo "<option value=\"$loc\">" . ucfirst($loc) . "</option>";
-            }
-            ?>
-          </select>
-        </div>
+      <?php if ($busDetails): ?>
+        <p><strong>For Bus #<?php echo htmlspecialchars($busDetails['busid']); ?> - <?php echo htmlspecialchars($busDetails['description']); ?> (<?php echo htmlspecialchars($busDetails['seatcap']); ?> Seats)</strong></p>
+      <?php endif; ?>
 
-        <div class="form-group">
-          <label for="fare" class="required">New Fare:</label>
-          <input type="number" id="fare" name="fare" required>
-        </div>
+      <?php if (!empty($notice)): ?>
+        <p class="notice"><?php echo $notice; ?></p>
+      <?php endif; ?>
 
-        <button type="submit" class="submit-button">Submit</button>
-        <a href="admin.php" class="back-link">Back to admin page</a>
+      <div class="form-group">
+        <label for="origin">Origin:</label>
+        <select name="origin" id="origin" required onchange="this.form.submit()">
+          <option value="" disabled selected hidden>Select origin</option>
+          <?php foreach ($routeOrigins as $o): ?>
+            <option value="<?php echo $o; ?>" <?php if ($origin === $o) echo 'selected'; ?>><?php echo ucfirst($o); ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
-    </form>
-  </main>
 
-  <footer id="about-section">
-    <div class="footerBoxes">
-      <div class="footerBox">
-        <h3>Privacy Policy</h3>
-        <hr />
-        <p>
+      <div class="form-group">
+        <label for="destination">Destination:</label>
+        <select name="destination" id="destination" required onchange="this.form.submit()">
+          <option value="" disabled selected hidden>Select destination</option>
+          <?php foreach ($routeDestinations as $d): ?>
+            <option value="<?php echo $d; ?>" <?php if ($destination === $d) echo 'selected'; ?>><?php echo ucfirst($d); ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <?php if ($currentFare !== null): ?>
+        <div class="form-group">
+          <label>Current Fare:</label>
+          <input type="text" value="₱<?php echo number_format($currentFare, 2); ?>" readonly />
+        </div>
+      <?php endif; ?>
+
+      <div class="form-group">
+        <label for="fare">New Fare:</label>
+        <input type="number" step="0.01" id="fare" name="fare">
+      </div>
+
+      <button type="submit" class="submit-button">Submit</button>
+      <a href="admin.php" class="back-link">Back to admin page</a>
+    </div>
+  </form>
+</main>
+
+<footer id="about-section">
+  <div class="footerBoxes">
+    <div class="footerBox">
+      <h3>Privacy Policy</h3>
+      <hr>
+      <p>
         We are committed to protecting your privacy. We will only use the
         information we collect about you lawfully (in accordance with the
         Data Protection Act 1998). Please read on if you wish to learn more
         about our privacy policy.
-        </p>
-      </div>
-      <div class="footerBox">
-        <h3>Terms of Service</h3>
-        <hr />
-        <p>
+      </p>
+    </div>
+    <div class="footerBox">
+      <h3>Terms of Service</h3>
+      <hr>
+      <p>
         By using our service, you agree to provide accurate booking
         information and comply with our travel and cancellation policies. We
         are not liable for delays or missed trips caused by user error or
         third-party issues.
-        </p>
-      </div>
-      <div class="footerBox">
-        <h3>Help & Support</h3>
-        <hr />
-        <p>
+      </p>
+    </div>
+    <div class="footerBox">
+      <h3>Help & Support</h3>
+      <hr>
+      <p>
         If you have any questions or need assistance, our support team is
         here to help. Contact us via email or visit our help center for
         answers to frequently asked questions.
-        </p>
-      </div>
+      </p>
     </div>
-    <hr />
-    <p class="copy-right">2025 Busket List</p>
-  </footer>
+  </div>
+  <hr>
+  <p class="copy-right">2025 Busket List</p>
+</footer>
 </body>
 </html>
-

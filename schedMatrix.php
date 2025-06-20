@@ -3,6 +3,24 @@ session_start();
 require_once 'db_connect.php';
 
 $addSuccess = $addError = $updateSuccess = $updateError = "";
+$busID = $_GET['busid'] ?? null;
+$busDetails = null;
+$origin = $destination = '';
+$schedules = [];
+
+// Load bus details and filtered origin/destination
+if ($busID) {
+    $busQuery = $conn->prepare("SELECT b.busid, bt.description, bt.seatcap, r.origin, r.destination, b.routeid FROM bus b JOIN bustype bt ON b.bustypeid = bt.bustypeid JOIN routes r ON b.routeid = r.routeid WHERE b.busid = ?");
+    $busQuery->bind_param("i", $busID);
+    $busQuery->execute();
+    $busDetails = $busQuery->get_result()->fetch_assoc();
+    $busQuery->close();
+
+    if ($busDetails) {
+        $origin = $busDetails['origin'];
+        $destination = $busDetails['destination'];
+    }
+}
 
 // Handle ADD Schedule
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addSchedule'])) {
@@ -21,27 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addSchedule'])) {
         if ($result->num_rows > 0) {
             $routeid = $result->fetch_assoc()['routeid'];
 
-            // ✅ Join to get bustype.description
-            $busRes = $conn->query("
-                SELECT bustype.description 
-                FROM bus 
-                JOIN bustype ON bus.bustypeid = bustype.bustypeid 
-                WHERE bus.busid = $busid
-            ");
-            $busClass = ($busRes->num_rows > 0) ? $busRes->fetch_assoc()['description'] : '';
-
-            if ($busClass) {
-                $stmt2 = $conn->prepare("INSERT INTO schedmatrix (busid, routeid, depart_date, depart_time, class) VALUES (?, ?, ?, ?, ?)");
-                $stmt2->bind_param("iisss", $busid, $routeid, $date, $time, $busClass);
-                if ($stmt2->execute()) {
-                    $addSuccess = "Schedule successfully added.";
-                } else {
-                    $addError = "Insert error: " . $stmt2->error;
-                }
-                $stmt2->close();
+            $stmt2 = $conn->prepare("INSERT INTO schedmatrix (busid, routeid, scheddate, departtime) VALUES (?, ?, ?, ?)");
+            $stmt2->bind_param("iiss", $busid, $routeid, $date, $time);
+            if ($stmt2->execute()) {
+                $addSuccess = "New schedule for Bus #$busid added.";
             } else {
-                $addError = "Bus type not found.";
+                $addError = "Insert error: " . $stmt2->error;
             }
+            $stmt2->close();
         } else {
             $addError = "Route not found.";
         }
@@ -58,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateSchedule'])) {
     $time = $_POST['update_time'] ?? '';
 
     if ($schedid && $date && $time) {
-        $stmt = $conn->prepare("UPDATE schedmatrix SET depart_date = ?, depart_time = ? WHERE schedid = ?");
+        $stmt = $conn->prepare("UPDATE schedmatrix SET scheddate = ?, departtime = ? WHERE schedid = ?");
         $stmt->bind_param("ssi", $date, $time, $schedid);
         if ($stmt->execute()) {
             $updateSuccess = $stmt->affected_rows > 0 ? "Schedule updated." : "No changes made or invalid Schedule ID.";
@@ -71,14 +76,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateSchedule'])) {
     }
 }
 
-// Load locations and buses
-$locations = function_exists('getUniqueLocations') ? getUniqueLocations($conn) : [];
+// Refresh schedule list
+if ($busID) {
+    $schedStmt = $conn->prepare("SELECT schedid, scheddate, departtime FROM schedmatrix WHERE busid = ?");
+    $schedStmt->bind_param("i", $busID);
+    $schedStmt->execute();
+    $schedResult = $schedStmt->get_result();
+    while ($row = $schedResult->fetch_assoc()) {
+        $schedules[] = $row;
+    }
+    $schedStmt->close();
+}
 
-$buses = $conn->query("
-    SELECT bus.busid, bustype.description 
-    FROM bus 
-    JOIN bustype ON bus.bustypeid = bustype.bustypeid
-");
+$buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN bustype ON bus.bustypeid = bustype.bustypeid");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -118,7 +128,7 @@ $buses = $conn->query("
 </header>
 
 <main>
-  <form method="POST" action="schedMatrix.php">
+  <form method="POST" action="schedMatrix.php?busid=<?php echo $busID; ?>">
     <div class="form-groups">
       <h1>Add a Schedule</h1>
       <?php if ($addSuccess) echo "<p class='message-success'>$addSuccess</p>"; ?>
@@ -126,18 +136,12 @@ $buses = $conn->query("
 
       <div class="form-group">
         <label for="add_origin">Origin:</label>
-        <select name="add_origin" id="add_origin" required>
-          <option value="" disabled selected>Select origin</option>
-          <?php foreach ($locations as $loc) echo "<option value=\"$loc\">".ucfirst($loc)."</option>"; ?>
-        </select>
+        <input type="text" name="add_origin" id="add_origin" required value="<?php echo htmlspecialchars($origin); ?>" readonly>
       </div>
 
       <div class="form-group">
         <label for="add_destination">Destination:</label>
-        <select name="add_destination" id="add_destination" required>
-          <option value="" disabled selected>Select destination</option>
-          <?php foreach ($locations as $loc) echo "<option value=\"$loc\">".ucfirst($loc)."</option>"; ?>
-        </select>
+        <input type="text" name="add_destination" id="add_destination" required value="<?php echo htmlspecialchars($destination); ?>" readonly>
       </div>
 
       <div class="form-group">
@@ -155,7 +159,8 @@ $buses = $conn->query("
         <select name="add_busid" id="add_busid" required>
           <option value="" disabled selected>Select bus</option>
           <?php while ($bus = $buses->fetch_assoc()) {
-              echo "<option value=\"{$bus['busid']}\">Bus {$bus['busid']} - {$bus['description']}</option>";
+              $selected = ($bus['busid'] == $busID) ? 'selected' : '';
+              echo "<option value=\"{$bus['busid']}\" $selected>Bus {$bus['busid']} - {$bus['description']}</option>";
           } ?>
         </select>
       </div>
@@ -164,15 +169,26 @@ $buses = $conn->query("
     </div>
   </form>
 
-  <form method="POST" action="schedMatrix.php">
+  <form method="POST" action="schedMatrix.php?busid=<?php echo $busID; ?>">
     <div class="form-groups">
       <h1>Update a Schedule</h1>
       <?php if ($updateSuccess) echo "<p class='message-success'>$updateSuccess</p>"; ?>
       <?php if ($updateError) echo "<p class='message-error'>$updateError</p>"; ?>
 
+      <?php if ($busDetails): ?>
+        <p><strong>For Bus #<?php echo htmlspecialchars($busDetails['busid']); ?> - <?php echo htmlspecialchars($busDetails['description']); ?> (<?php echo htmlspecialchars($busDetails['seatcap']); ?> Seats)</strong></p>
+      <?php endif; ?>
+
       <div class="form-group">
         <label for="update_schedid">Schedule ID:</label>
-        <input type="number" name="update_schedid" id="update_schedid" required>
+        <select name="update_schedid" id="update_schedid" required>
+          <option value="" disabled selected>Select a schedule</option>
+          <?php foreach ($schedules as $sched): ?>
+            <option value="<?php echo $sched['schedid']; ?>">
+              ID #<?php echo $sched['schedid']; ?> - <?php echo $sched['scheddate']; ?> @ <?php echo $sched['departtime']; ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <div class="form-group">
@@ -200,8 +216,8 @@ $buses = $conn->query("
         We are committed to protecting your privacy. We will only use the
         information we collect about you lawfully (in accordance with the
         Data Protection Act 1998). Please read on if you wish to learn more
-                about our privacy policy.
-    </p>
+        about our privacy policy.
+      </p>
     </div>
     <div class="footerBox">
       <h3>Terms of Service</h3>
@@ -211,7 +227,7 @@ $buses = $conn->query("
         information and comply with our travel and cancellation policies. We
         are not liable for delays or missed trips caused by user error or
         third-party issues.
-        </p>
+      </p>
     </div>
     <div class="footerBox">
       <h3>Help & Support</h3>
@@ -220,7 +236,7 @@ $buses = $conn->query("
         If you have any questions or need assistance, our support team is
         here to help. Contact us via email or visit our help center for
         answers to frequently asked questions.
-    </p>
+      </p>
     </div>
   </div>
   <hr />
@@ -228,3 +244,4 @@ $buses = $conn->query("
 </footer>
 </body>
 </html>
+
