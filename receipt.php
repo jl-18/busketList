@@ -1,29 +1,27 @@
 <?php
 session_start();
-include 'db_connect.php';
 
 function safe($key, $array) {
     return htmlspecialchars(urldecode($array[$key] ?? ''));
 }
 
-// Retrieve session values for trip and passenger.
 $trip = $_SESSION['trip'] ?? [];
 $passenger = $_SESSION['passenger'] ?? [];
 
-// Trip details.
 $origin      = strtoupper(safe('origin', $trip));
 $destination = strtoupper(safe('destination', $trip));
-$passengers  = intval(safe('passengers', $trip));
+$depart = safe('depart', $trip);
+$tripType = ucwords(str_replace('-', ' ', safe('trip_type', $trip)));
+$passengers = intval(safe('passengers', $trip));
+$returnDate = safe('return', $trip);
 
 // Schedule details (set in bookingSelection.php).
 $selectedTime  = safe('time', $trip);
-$depart        = safe('depart', $trip);       // Departure date/time from hero/bookingSelection.
-$scheddate     = safe('scheddate', $trip);    // Schedule date if applicable.
 $selectedClass = safe('class', $trip);
-$sched_id      = safe('sched_id', $trip);
-$fare          = floatval(safe('fare', $trip));
+$availableSeats = intval(safe('seats', $trip));
+$fare = floatval(safe('fare', $trip));
 
-// Passenger details.
+// Passenger details for DB update.
 $firstName   = safe('firstName', $passenger);
 $middleName  = safe('middleName', $passenger);
 $lastName    = safe('lastName', $passenger);
@@ -31,12 +29,11 @@ $email       = safe('email', $passenger);
 $mobileNo    = safe('mobileNo', $passenger);
 $fullAddress = safe('fullAddress', $passenger);
 
-// Retrieve total fare and booking id (trip_id) from session.
 $totalFare = floatval($_SESSION['totalFare'] ?? 0);
-$bookingid = $_SESSION['trip_id'];  // This was set in a previous page (payment).
+$bookingid = $_SESSION['trip_id'];
+$depart = safe('depart', $_SESSION['trip']);
 
-// ---------------------------------------------------------------------------
-// Update Passenger Table.
+// Check if the passenger record (by passengerid) already exists.
 $passenger_id = $_SESSION['passenger_id'] ?? ''; 
 if (!empty($passenger_id)) {
     $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM passenger WHERE passengerid = ?");
@@ -54,8 +51,7 @@ if (!empty($passenger_id)) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Retrieve route ID from routes table.
+// Retrieve route ID from routes table using origin and destination.
 $routeid = null;
 $stmt = $conn->prepare("SELECT routeid FROM routes WHERE origin = ? AND destination = ? LIMIT 1");
 if ($stmt) {
@@ -66,8 +62,7 @@ if ($stmt) {
     $stmt->close();
 }
 
-// ---------------------------------------------------------------------------
-// Update Booking Table.
+// Check if a booking record with this bookingid already exists.
 $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM booking WHERE bookingid = ?");
 $stmt->bind_param("s", $bookingid);
 $stmt->execute();
@@ -143,13 +138,12 @@ if ($invCount == 0 && !empty($fareid)) {
         <div class="ticket-details">
             <div class="detail-row">
                 <div class="detail-item"><span class="label">Booking ID:</span> <?php echo $bookingid; ?></div>
+                
             </div>
-            <div class="detail-row">
-                <div class="detail-item"><span class="label">Passenger Name:</span> 
-                    <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1) . '. ' : '') . $lastName; ?>
-                </div>
+            <div class="detail-row ">
+                <div class="detail-item"><span class="label">Passenger Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1) . '. ' : '') . $lastName; ?></div>
             </div>
-            <div class="detail-row">
+            <div class="detail-row ">
                 <div class="detail-item"><span class="label">Passenger Count:</span> <?php echo $passengers; ?> Only</div>
             </div>
             <div class="detail-row">
@@ -159,6 +153,7 @@ if ($invCount == 0 && !empty($fareid)) {
                 </div>
             </div>
             <div class="detail-row">
+                <div class="detail-item"><span class="label">Passenger Count:</span> <?php echo $passengers; ?> Only</div>
                 <div class="detail-item status">
                     <div class="bill-paid"><i class="fas fa-check-circle"></i> Bill Paid</div>
                 </div>
@@ -166,11 +161,7 @@ if ($invCount == 0 && !empty($fareid)) {
             <div class="route-time-section">
                 <div class="route"><?php echo $origin; ?> <span class="arrow">►</span> <?php echo $destination; ?></div>
                 <div class="time-details">
-                    <div class="time-item"><span class="label">Departure:</span> 
-                        <?php echo $selectedTime ? date('H:i', strtotime($selectedTime)) : 'N/A'; ?>
-                    </div>
-                    <div class="time-item"><span class="label">Depart Date:</span> <?php echo $depart; ?></div>
-                    <div class="time-item"><span class="label">Schedule Date:</span> <?php echo $scheddate; ?></div>
+                    <div class="time-item"><span class="label">Departure:</span> <?php echo $selectedTime ? date('H:i', strtotime($selectedTime)) : 'N/A'; ?></div>
                 </div>
             </div>
         </div>
@@ -180,10 +171,10 @@ if ($invCount == 0 && !empty($fareid)) {
         <div class="stub-header">Bus Ticket</div>
         <div class="stub-details">
             <p><span class="label">Booking ID:</span> <?php echo $bookingid; ?></p>
-            <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1).'. ' : '') . $lastName; ?></p>
+            <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1).'. ' : '') . $lastName; ?></p>
             <p><span class="label">From:</span> <?php echo $origin; ?></p>
             <p><span class="label">To:</span> <?php echo $destination; ?></p>
-            <p><span class="label">Departure:</span> <?php echo $depart; ?></p>
+            <p><span class="label">Departure:</span> <?php echo $selectedTime; ?></p>
             <p><span class="label">Passenger(s):</span> <?php echo $passengers; ?> Only</p>
             <p><span class="label">Total:</span> ₱<?php echo number_format($totalFare, 2); ?></p>
         </div>
