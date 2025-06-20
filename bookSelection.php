@@ -25,35 +25,46 @@
 </head>
 <body>
 <?php
-include 'db_connect.php'; // Ensure this file sets up $conn
+include 'db_connect.php'; 
+session_start();
 
 // Helper to safely get parameters
 function get_safe_param($key) {
   return htmlspecialchars(urldecode($_GET[$key] ?? ''));
 }
 
-$origin = get_safe_param('origin');
+// Retrieve values from the GET parameters coming from hero.php.
+$origin      = get_safe_param('origin');
 $destination = get_safe_param('destination');
-$depart = get_safe_param('depart');
-$tripType = get_safe_param('trip-type');
-$passengers = get_safe_param('passengers') ?: '1';
-$returnDate = get_safe_param('return');
+$depart      = get_safe_param('depart');
+$tripType    = get_safe_param('trip-type');
+$passengers  = get_safe_param('passengers') ?: '1';
+$returnDate  = get_safe_param('return');
 
-$formattedOrigin = strtoupper($origin);
+$formattedOrigin    = strtoupper($origin);
 $formattedDestination = strtoupper($destination);
-$displayDepartDate = $depart ?: 'N/A';
-$displayTripType = $tripType ? ucwords(str_replace('-', ' ', $tripType)) : 'N/A';
-$displayPassengers = $passengers ?: '1';
+$displayDepartDate  = $depart ?: 'N/A';
+$displayTripType    = $tripType ? ucwords(str_replace('-', ' ', $tripType)) : 'N/A';
+$displayPassengers  = $passengers ?: '1';
+
+// Store the basic trip data into the session so later pages can access it.
+$_SESSION['trip'] = [
+  'origin'      => $origin,
+  'destination' => $destination,
+  'depart'      => $depart,
+  'trip_type'   => $tripType,
+  'passengers'  => $passengers,
+  'return'      => $returnDate
+];
 
 // Query available trips using the selected origin, destination, and date.
-// Here, we join the schedmatrix, routes, bus, bustype, and farematrix tables.
-$sql = "SELECT s.sched_id, s.sched_date, s.depart_time, bt.description AS class, bt.seatcap, f.fareamount
+$sql = "SELECT s.schedid, s.scheddate, s.departtime, bt.description AS class, bt.seatcap, f.fareamount
         FROM schedmatrix s
-        JOIN routes r ON s.route_id = r.routeid
-        JOIN bus b ON s.bus_id = b.busid
+        JOIN routes r ON s.routeid = r.routeid
+        JOIN bus b ON s.busid = b.busid
         JOIN bustype bt ON b.bustypeid = bt.bustypeid
         JOIN farematrix f ON r.routeid = f.routeid AND b.bustypeid = f.bustypeid
-        WHERE r.origin = ? AND r.destination = ? AND s.sched_date = ?";
+        WHERE r.origin = ? AND r.destination = ? AND s.scheddate = ?";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sss", $origin, $destination, $depart);
@@ -62,19 +73,19 @@ $result = $stmt->get_result();
 ?>
 
 <header>
-    <nav>
-        <h1>Busket List</h1>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="#about-section">About</a></li>
-        </ul>
-    </nav>
-    <div class="img-placeholder"></div>
-    <section>
-        <div class="book-steps">
-            <p><span>Step 1: </span>Choose a departure schedule</p>
-        </div>
-    </section>
+  <nav>
+    <h1>Busket List</h1>
+    <ul>
+      <li><a href="index.php">Home</a></li>
+      <li><a href="#about-section">About</a></li>
+    </ul>
+  </nav>
+  <div class="img-placeholder"></div>
+  <section>
+    <div class="book-steps">
+      <p><span>Step 1: </span>Choose a departure schedule</p>
+    </div>
+  </section>
 </header>
 
 <main>
@@ -114,14 +125,18 @@ $result = $stmt->get_result();
       if ($result->num_rows > 0) {
           // Fetch each available trip and generate a row.
           while ($trip = $result->fetch_assoc()) {
-              // Build query parameters to pass to the next step (passenger details)
+              // Build query parameters to pass to the next step (passenger details).
+              // These include the specific schedule information that was selected.
               $params = [
-                'sched_id'    => urlencode($trip['sched_id']),
+                'sched_id'    => urlencode($trip['schedid']),
                 'origin'      => urlencode($origin),
                 'destination' => urlencode($destination),
                 'depart'      => urlencode($depart),
                 'trip-type'   => urlencode($tripType),
-                'passengers'  => urlencode($passengers)
+                'passengers'  => urlencode($passengers),
+                'time'        => urlencode($trip['departtime']),
+                'class'       => urlencode($trip['class']),
+                'fare'        => urlencode($trip['fareamount'])
               ];
               if (!empty($returnDate)) {
                 $params['return'] = urlencode($returnDate);
@@ -129,8 +144,8 @@ $result = $stmt->get_result();
               $query_string = http_build_query($params);
 
               echo '<tr>';
-              // Format departure time to, for example, 12:00 AM
-              echo '<td>' . htmlspecialchars(date("h:i A", strtotime($trip['depart_time']))) . '</td>';
+              // Format departure time to, for example, 12:00 AM.
+              echo '<td>' . htmlspecialchars(date("h:i A", strtotime($trip['departtime']))) . '</td>';
               echo '<td>' . htmlspecialchars($trip['class']) . '</td>';
               echo '<td>' . htmlspecialchars($trip['seatcap']) . '</td>';
               echo '<td>₱' . number_format($trip['fareamount'], 2) . '</td>';

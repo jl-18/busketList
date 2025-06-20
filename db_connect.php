@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "Database@123";
-$dbname = "bus_bookingdb";
+$password = "";
+$dbname = "busket-list";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

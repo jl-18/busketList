@@ -1,3 +1,7 @@
+<?php include 'db_connect.php';
+  session_start();
+  $locations = getUniqueLocations($conn);
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -21,15 +25,11 @@
     </style>
   </head>
   <body>
-    <?php include 'db_connect.php';
-      $locations = getUniqueLocations($conn);
-    ?>
-
     <header>
       <nav>
         <h1>Busket List</h1>
         <ul>
-          <li><a href="index.html">Home</a></li>
+          <li><a href="hero.php">Home</a></li>
           <li><a href="#about-section">About</a></li>
         </ul>
       </nav>
@@ -61,7 +61,6 @@
               name="trip-type"
               value="round-trip"
             />
-            <!-- <label for="round-trip">Round-trip</label> -->
           </div>
 
           <div class="trip-route">
@@ -95,33 +94,21 @@
             </div>
           </div>
 
-          <!-- <div class="trip-passengers">
+          <div class="trip-passengers">
             <div class="trip-passengers-label">
-              <label for="passengers">Passengers</label>
+              <label for="passengers"></label>
             </div>
-            <div class="passenger-control">
-              <button type="button" onclick="decrementValue()">-</button>
-              <input
-                type="number"
-                id="passengers"
-                name="passengers"
-                value="1"
-                min="1"
-                required
-              />
-              <button type="button" onclick="incrementValue()">+</button>
-            </div>
-          </div> -->
-
+            
+          </div>
           <br />
           <div id="dateError" class="error-message"></div>
-
           <input type="submit" value="Submit" />
           <button type="button" id="manageBookingsBtn">
             Manage my bookings
           </button>
         </form>
       </div>
+      <a href="admin.php" class="back-link" style="margin-left: 50px;"> Back to navigation page</a>
 
     
     </main>
@@ -141,6 +128,7 @@
         <div class="footerBox">
           <h3>Terms of Service</h3>
           <hr />
+          <p>By using our service, you agree to provide accurate...</p>
           <p>
             By using our service, you agree to provide accurate booking
             information and comply with our travel and cancellation policies. We
@@ -164,25 +152,29 @@
 
     <div id="manageBookingsModal" class="modal">
       <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2>Manage my bookings</h2>
-        <div class="tab-buttons">
-          <button class="active">Change Schedule</button>
-          <button>See invoice</button>
-        </div>
-        <form>
-          <div class="modal-form-group">
-            <label for="trip-ID">Trip ID:</label>
-            <small>(No. from the invoice presented to you)</small>
-            <input type="text" id="trip-ID" name="trip-ID" />
+          <span class="close-button">&times;</span>
+          <h2>Manage my bookings</h2>
+          <div class="tab-buttons">
+              <button id="changeScheduleBtn" class="active">Change Schedule</button>
+              <button id="seeInvoiceBtn">See invoice</button>
           </div>
-          <div class="modal-form-group">
-            <label for="mobileNumber">Mobile Number:</label>
-            <small>(Number used in your online booking transaction)</small>
-            <input type="text" id="mobileNumber" name="mobileNumber" />
-          </div>
-          <button type="submit" class="modal-submit-button">Submit</button>
-        </form>
+          
+          <form id="changeScheduleForm">
+              <div class="modal-form-group">
+                  <label for="trip-ID-change">Trip ID:</label>
+                  <small>(No. from the invoice presented to you)</small>
+                  <input type="text" id="trip-ID-change" name="trip-ID-change" />
+              </div>
+              <button type="submit" class="modal-submit-button">Submit</button>
+          </form>
+
+          <form id="seeInvoiceForm" style="display: none;"> <div class="modal-form-group">
+                  <label for="trip-ID-invoice">Trip ID:</label>
+                  <small>(No. from the invoice presented to you)</small>
+                  <input type="text" id="trip-ID-invoice" name="trip-ID-invoice" />
+              </div>
+              <button type="submit" class="modal-submit-button">Submit</button>
+          </form>
       </div>
     </div>
 
@@ -220,26 +212,7 @@
       // Prevent past date selection
       const today = new Date().toISOString().split("T")[0];
       document.getElementById("depart").setAttribute("min", today);
-      document.getElementById("return").setAttribute("min", today);
 
-      // Show/hide return date field
-      const tripTypeRadios = document.getElementsByName("trip-type");
-      const returnContainer = document.getElementById("return-date-container");
-
-      tripTypeRadios.forEach((radio) => {
-        radio.addEventListener("change", function () {
-          if (this.value === "round-trip") {
-            returnContainer.style.display = "block";
-            document.getElementById("return").required = true;
-          } else {
-            returnContainer.style.display = "none";
-            document.getElementById("return").required = false;
-            document.getElementById("return").value = "";
-          }
-        });
-      });
-
-      // Return date must be after departure date
       document
         .getElementById("tripForm")
         .addEventListener("submit", function (e) {
@@ -275,6 +248,31 @@
           .catch((error) => {
             console.error("Error fetching destinations:", error);
           });
+      });
+
+      const changeScheduleBtn = document.getElementById('changeScheduleBtn');
+      const seeInvoiceBtn = document.getElementById('seeInvoiceBtn');
+      const changeScheduleForm = document.getElementById('changeScheduleForm');
+      const seeInvoiceForm = document.getElementById('seeInvoiceForm');
+
+      changeScheduleBtn.addEventListener('click', function() {
+          // Set active class
+          changeScheduleBtn.classList.add('active');
+          seeInvoiceBtn.classList.remove('active');
+
+          // Show/hide forms
+          changeScheduleForm.style.display = 'block';
+          seeInvoiceForm.style.display = 'none';
+      });
+
+      seeInvoiceBtn.addEventListener('click', function() {
+          // Set active class
+          seeInvoiceBtn.classList.add('active');
+          changeScheduleBtn.classList.remove('active');
+
+          // Show/hide forms
+          changeScheduleForm.style.display = 'none';
+          seeInvoiceForm.style.display = 'block';
       });
 
     </script>

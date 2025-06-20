@@ -1,27 +1,27 @@
 <?php
 session_start();
+include 'db_connect.php';
 
 function safe($key, $array) {
     return htmlspecialchars(urldecode($array[$key] ?? ''));
 }
 
+// Retrieve session values for trip and passenger.
 $trip = $_SESSION['trip'] ?? [];
 $passenger = $_SESSION['passenger'] ?? [];
 
 $origin      = strtoupper(safe('origin', $trip));
 $destination = strtoupper(safe('destination', $trip));
-$depart = safe('depart', $trip);
-$tripType = ucwords(str_replace('-', ' ', safe('trip_type', $trip)));
-$passengers = intval(safe('passengers', $trip));
-$returnDate = safe('return', $trip);
+$passengers  = intval(safe('passengers', $trip));
 
-// Schedule details (set in bookingSelection.php).
+// Schedule details.
 $selectedTime  = safe('time', $trip);
 $selectedClass = safe('class', $trip);
-$availableSeats = intval(safe('seats', $trip));
-$fare = floatval(safe('fare', $trip));
+$sched_id      = safe('sched_id', $trip);
+$fare          = floatval(safe('fare', $trip));
+$depart        = safe('depart', $trip);  // Departure date/time
 
-// Passenger details for DB update.
+// Passenger details.
 $firstName   = safe('firstName', $passenger);
 $middleName  = safe('middleName', $passenger);
 $lastName    = safe('lastName', $passenger);
@@ -30,10 +30,9 @@ $mobileNo    = safe('mobileNo', $passenger);
 $fullAddress = safe('fullAddress', $passenger);
 
 $totalFare = floatval($_SESSION['totalFare'] ?? 0);
-$bookingid = $_SESSION['trip_id'];
-$depart = safe('depart', $_SESSION['trip']);
+$bookingid = $_SESSION['trip_id'];  // Booking ID was saved earlier
 
-// Check if the passenger record (by passengerid) already exists.
+// Insert the passenger record if it doesn't exist.
 $passenger_id = $_SESSION['passenger_id'] ?? ''; 
 if (!empty($passenger_id)) {
     $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM passenger WHERE passengerid = ?");
@@ -51,7 +50,7 @@ if (!empty($passenger_id)) {
     }
 }
 
-// Retrieve route ID from routes table using origin and destination.
+// Retrieve route ID based on origin and destination.
 $routeid = null;
 $stmt = $conn->prepare("SELECT routeid FROM routes WHERE origin = ? AND destination = ? LIMIT 1");
 if ($stmt) {
@@ -62,6 +61,8 @@ if ($stmt) {
     $stmt->close();
 }
 
+// ---------------------------------------------------------------------------
+// IMPORTANT: Insert the booking record FIRST since invoice.bookingid is a foreign key.
 // Check if a booking record with this bookingid already exists.
 $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM booking WHERE bookingid = ?");
 $stmt->bind_param("s", $bookingid);
@@ -81,38 +82,29 @@ if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routei
 }
 
 // ---------------------------------------------------------------------------
-// ---------- Invoice Insertion ----------------------------------------------
-// We assume that your payment file stored the following invoice details:
-// Example snippet (already in your receipt code):
+// Now, insert the invoice record.
+// Retrieve invoice details stored in session.
 $invoice = $_SESSION['invoice'] ?? [];
-$fareid      = safe('fareid', $invoice);
-$discountVal = safe('discounttypeid', $invoice);  // adjust as needed
-$final_payment = floatval($_SESSION['final_payment'] ?? 0);
-
-// Then insert using:
-$stmt = $conn->prepare("INSERT INTO invoice (invoiceid, bookingid, fareid, discounttypeid, discountamount, grandtotal, issueddate, issuedtime, paymentdate, paymenttime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sssiddssss", 
-    $invoice['invoiceid'],
-    $invoice['bookingid'],
-    $invoice['fareid'],
-    $invoice['discounttypeid'],
-    $invoice['discountamount'],
-    $invoice['grandtotal'],
-    $invoice['issueddate'],
-    $invoice['issuedtime'],
-    $invoice['paymentdate'],
-    $invoice['paymenttime']
-);
-$stmt->execute();
-$stmt->close();
-
-// Insert new invoice record if none exists.
-if ($invCount == 0 && !empty($fareid)) {
-    $stmt = $conn->prepare("INSERT INTO invoice (bookingid, fareid, discount, final_payment, invoice_date) VALUES (?, ?, ?, ?, NOW())");
-    // Here, we assume the invoice table column types match: bookingid (string), fareid (string), discount (string), final_payment (double)
-    $stmt->bind_param("ssid", $bookingid, $fareid, $discountVal, $final_payment);
+if (!empty($invoice)) {
+    $stmt = $conn->prepare("INSERT INTO invoice (bookingid, fareid, discounttypeid, discountamount, grandtotal, issueddate, issuedtime, paymentdate, paymenttime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    if (!$stmt) {
+        die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
+    }
+    // Bind parameters: bookingid, fareid, discounttypeid are strings; discountamount and grandtotal are doubles; then the remaining 4 are strings.
+    $stmt->bind_param("sssddssss",
+        $invoice['bookingid'],
+        $invoice['fareid'],
+        $invoice['discounttypeid'],
+        $invoice['discountamount'],
+        $invoice['grandtotal'],
+        $invoice['issueddate'],
+        $invoice['issuedtime'],
+        $invoice['paymentdate'],
+        $invoice['paymenttime']
+    );
     $stmt->execute();
     $stmt->close();
+    // echo '<pre>' . print_r($_SESSION['invoice'], true) . '</pre>';
 }
 ?>
 <!DOCTYPE html>
@@ -153,7 +145,6 @@ if ($invCount == 0 && !empty($fareid)) {
                 </div>
             </div>
             <div class="detail-row">
-                <div class="detail-item"><span class="label">Passenger Count:</span> <?php echo $passengers; ?> Only</div>
                 <div class="detail-item status">
                     <div class="bill-paid"><i class="fas fa-check-circle"></i> Bill Paid</div>
                 </div>
@@ -174,7 +165,7 @@ if ($invCount == 0 && !empty($fareid)) {
             <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1).'. ' : '') . $lastName; ?></p>
             <p><span class="label">From:</span> <?php echo $origin; ?></p>
             <p><span class="label">To:</span> <?php echo $destination; ?></p>
-            <p><span class="label">Departure:</span> <?php echo $selectedTime; ?></p>
+            <p><span class="label">Departure:</span> <?php echo $depart; ?></p>
             <p><span class="label">Passenger(s):</span> <?php echo $passengers; ?> Only</p>
             <p><span class="label">Total:</span> ₱<?php echo number_format($totalFare, 2); ?></p>
         </div>
@@ -189,7 +180,7 @@ if ($invCount == 0 && !empty($fareid)) {
     </div>
 </div>
 <div class="home-button-container">
-    <a href="index.html" class="home-button">Return to Home</a>
+    <a href="hero.php" class="home-button">Return to Home</a>
 </div>
 </body>
 </html>
