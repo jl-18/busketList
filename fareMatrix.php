@@ -174,4 +174,3 @@ $locations = function_exists('getUniqueLocations') ? getUniqueLocations($conn) :
   </footer>
 </body>
 </html>
-
