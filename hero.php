@@ -22,22 +22,6 @@
       nav ul li a:hover {
         color: #555;
       }
-      .passenger-control {
-        display: flex;
-        align-items: center;
-        gap: 6px; /* space between buttons and input */
-      }
-
-      .passenger-control button {
-        padding: 4px 10px;
-        font-size: 18px;
-        cursor: pointer;
-      }
-
-      .passenger-control input {
-        width: 50px;
-        text-align: center;
-      }
     </style>
   </head>
   <body>
@@ -77,7 +61,7 @@
               name="trip-type"
               value="round-trip"
             />
-            <label for="round-trip">Round-trip</label>
+            <!-- <label for="round-trip">Round-trip</label> -->
           </div>
 
           <div class="trip-route">
@@ -111,7 +95,7 @@
             </div>
           </div>
 
-          <div class="trip-passengers">
+          <!-- <div class="trip-passengers">
             <div class="trip-passengers-label">
               <label for="passengers">Passengers</label>
             </div>
@@ -127,7 +111,7 @@
               />
               <button type="button" onclick="incrementValue()">+</button>
             </div>
-          </div>
+          </div> -->
 
           <br />
           <div id="dateError" class="error-message"></div>

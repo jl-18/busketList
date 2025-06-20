@@ -128,26 +128,59 @@ $selectedSeatsString = htmlspecialchars($_SESSION['selected_seats'] ?? '');
 // Process payment submission.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment = floatval($_POST['payment'] ?? 0);
+    // Allow for a tiny floating-point tolerance.
     if (abs($payment - $final_amount) > 0.01) {
         $_SESSION['payment_error'] = "Enter the correct amount: ₱" . number_format($final_amount, 2);
         header("Location: payment.php");
         exit;
     } else {
-        // Save the final payment details and additional fare-related values in the session.
+        // Save final payment and booking ID (previously generated in your workflow) into session.
         $_SESSION['final_payment'] = $payment;
-        $_SESSION['trip_id'] = $trip_id;  // This booking ID is now unique.
-        $_SESSION['totalFare'] = $final_amount;
-        $_SESSION['fare_details'] = [
-            'selectedFare'    => $selectedFare,
-            'totalFare'       => $totalFare,
-            'discount_rate'   => $discount_rate,
-            'discountLabel'   => $discountLabel,
-            'discount_amount' => $discount_amount,
-            'final_amount'    => $final_amount
+        // The booking/trip id (used as the foreign key in the invoice table) should already be set.
+        // We'll assume it's stored in $_SESSION['trip_id'].
+        $bookingid = $_SESSION['trip_id'];
+
+        // Retrieve the total fare (if not already stored) from session.
+        $totalFare = floatval($_SESSION['totalFare'] ?? 0);
+
+        // Retrieve the fareid—ideally, this would have been stored in the trip data.
+        // For example, in bookingSelection.php, after querying farematrix you might have:
+        // $_SESSION['trip']['fareid'] = $farematrix_row['fareid'];
+        // In our example we fetch it from the trip session array.
+        $fareid = safe('fareid', $_SESSION['trip']);
+
+        // Retrieve the discount type id. (Assume this came from your passenger page.)
+        $discount_type_id = safe('discount', $_SESSION['passenger']);
+
+        // Compute the discount amount (if any) as the difference between total fare and final payment.
+        $discount_amount = $totalFare - $payment;
+        // Your grand total is the final amount paid.
+        $grandtotal = $payment;
+
+        // Set the following dates and times. You can adjust these as needed.
+        $issueddate  = date('Y-m-d');
+        $issuedtime  = date('H:i:s');
+        $paymentdate = $issueddate;
+        $paymenttime = $issuedtime;
+
+        // Optionally generate an invoice id. (Here we create a 4-digit string; adjust if needed.)
+        $invoiceid = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+
+        // Save all invoice details in a session array.
+        $_SESSION['invoice'] = [
+            'invoiceid'      => $invoiceid,
+            'bookingid'      => $bookingid,
+            'fareid'         => $fareid,             // This should be set in a previous query or session.
+            'discounttypeid' => $discount_type_id,   // The discount type id from the passenger selection.
+            'discountamount' => $discount_amount,
+            'grandtotal'     => $grandtotal,
+            'issueddate'     => $issueddate,
+            'issuedtime'     => $issuedtime,
+            'paymentdate'    => $paymentdate,
+            'paymenttime'    => $paymenttime
         ];
-        $_SESSION['selected_seats'] = $selectedSeatsString;
-        
-        // Redirect to the receipt page where all session data will be displayed.
+
+        // Redirect to receipt page where you'll use $_SESSION['invoice'] to insert into your invoice table.
         header("Location: receipt.php");
         exit;
     }

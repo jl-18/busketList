@@ -10,17 +10,20 @@ function safe($key, $array) {
 $trip = $_SESSION['trip'] ?? [];
 $passenger = $_SESSION['passenger'] ?? [];
 
+// Trip details.
 $origin      = strtoupper(safe('origin', $trip));
 $destination = strtoupper(safe('destination', $trip));
 $passengers  = intval(safe('passengers', $trip));
 
 // Schedule details (set in bookingSelection.php).
 $selectedTime  = safe('time', $trip);
+$depart        = safe('depart', $trip);       // Departure date/time from hero/bookingSelection.
+$scheddate     = safe('scheddate', $trip);    // Schedule date if applicable.
 $selectedClass = safe('class', $trip);
 $sched_id      = safe('sched_id', $trip);
 $fare          = floatval(safe('fare', $trip));
 
-// Passenger details for DB update.
+// Passenger details.
 $firstName   = safe('firstName', $passenger);
 $middleName  = safe('middleName', $passenger);
 $lastName    = safe('lastName', $passenger);
@@ -28,11 +31,12 @@ $email       = safe('email', $passenger);
 $mobileNo    = safe('mobileNo', $passenger);
 $fullAddress = safe('fullAddress', $passenger);
 
+// Retrieve total fare and booking id (trip_id) from session.
 $totalFare = floatval($_SESSION['totalFare'] ?? 0);
-$bookingid = $_SESSION['trip_id'];
-$depart = safe('depart', $_SESSION['trip']);
+$bookingid = $_SESSION['trip_id'];  // This was set in a previous page (payment).
 
-// Check if the passenger record (by passengerid) already exists.
+// ---------------------------------------------------------------------------
+// Update Passenger Table.
 $passenger_id = $_SESSION['passenger_id'] ?? ''; 
 if (!empty($passenger_id)) {
     $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM passenger WHERE passengerid = ?");
@@ -50,7 +54,8 @@ if (!empty($passenger_id)) {
     }
 }
 
-// Retrieve route ID from routes table using origin and destination.
+// ---------------------------------------------------------------------------
+// Retrieve route ID from routes table.
 $routeid = null;
 $stmt = $conn->prepare("SELECT routeid FROM routes WHERE origin = ? AND destination = ? LIMIT 1");
 if ($stmt) {
@@ -61,7 +66,8 @@ if ($stmt) {
     $stmt->close();
 }
 
-// Check if a booking record with this bookingid already exists.
+// ---------------------------------------------------------------------------
+// Update Booking Table.
 $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM booking WHERE bookingid = ?");
 $stmt->bind_param("s", $bookingid);
 $stmt->execute();
@@ -75,6 +81,41 @@ $bookingTime = date('H:i:s');
 if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routeid)) {
     $stmt = $conn->prepare("INSERT INTO booking (bookingid, passengerid, schedid, routeid, bookingdate, bookingtime) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("ssisss", $bookingid, $passenger_id, $sched_id, $routeid, $bookingDate, $bookingTime);
+    $stmt->execute();
+    $stmt->close();
+}
+
+// ---------------------------------------------------------------------------
+// ---------- Invoice Insertion ----------------------------------------------
+// We assume that your payment file stored the following invoice details:
+// Example snippet (already in your receipt code):
+$invoice = $_SESSION['invoice'] ?? [];
+$fareid      = safe('fareid', $invoice);
+$discountVal = safe('discounttypeid', $invoice);  // adjust as needed
+$final_payment = floatval($_SESSION['final_payment'] ?? 0);
+
+// Then insert using:
+$stmt = $conn->prepare("INSERT INTO invoice (invoiceid, bookingid, fareid, discounttypeid, discountamount, grandtotal, issueddate, issuedtime, paymentdate, paymenttime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("sssiddssss", 
+    $invoice['invoiceid'],
+    $invoice['bookingid'],
+    $invoice['fareid'],
+    $invoice['discounttypeid'],
+    $invoice['discountamount'],
+    $invoice['grandtotal'],
+    $invoice['issueddate'],
+    $invoice['issuedtime'],
+    $invoice['paymentdate'],
+    $invoice['paymenttime']
+);
+$stmt->execute();
+$stmt->close();
+
+// Insert new invoice record if none exists.
+if ($invCount == 0 && !empty($fareid)) {
+    $stmt = $conn->prepare("INSERT INTO invoice (bookingid, fareid, discount, final_payment, invoice_date) VALUES (?, ?, ?, ?, NOW())");
+    // Here, we assume the invoice table column types match: bookingid (string), fareid (string), discount (string), final_payment (double)
+    $stmt->bind_param("ssid", $bookingid, $fareid, $discountVal, $final_payment);
     $stmt->execute();
     $stmt->close();
 }
@@ -102,12 +143,13 @@ if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routei
         <div class="ticket-details">
             <div class="detail-row">
                 <div class="detail-item"><span class="label">Booking ID:</span> <?php echo $bookingid; ?></div>
-                
             </div>
-            <div class="detail-row ">
-                <div class="detail-item"><span class="label">Passenger Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1) . '. ' : '') . $lastName; ?></div>
+            <div class="detail-row">
+                <div class="detail-item"><span class="label">Passenger Name:</span> 
+                    <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1) . '. ' : '') . $lastName; ?>
+                </div>
             </div>
-            <div class="detail-row ">
+            <div class="detail-row">
                 <div class="detail-item"><span class="label">Passenger Count:</span> <?php echo $passengers; ?> Only</div>
             </div>
             <div class="detail-row">
@@ -124,7 +166,11 @@ if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routei
             <div class="route-time-section">
                 <div class="route"><?php echo $origin; ?> <span class="arrow">►</span> <?php echo $destination; ?></div>
                 <div class="time-details">
-                    <div class="time-item"><span class="label">Departure:</span> <?php echo $selectedTime ? date('H:i', strtotime($selectedTime)) : 'N/A'; ?></div>
+                    <div class="time-item"><span class="label">Departure:</span> 
+                        <?php echo $selectedTime ? date('H:i', strtotime($selectedTime)) : 'N/A'; ?>
+                    </div>
+                    <div class="time-item"><span class="label">Depart Date:</span> <?php echo $depart; ?></div>
+                    <div class="time-item"><span class="label">Schedule Date:</span> <?php echo $scheddate; ?></div>
                 </div>
             </div>
         </div>
@@ -134,7 +180,7 @@ if ($bCount == 0 && !empty($sched_id) && !empty($passenger_id) && !empty($routei
         <div class="stub-header">Bus Ticket</div>
         <div class="stub-details">
             <p><span class="label">Booking ID:</span> <?php echo $bookingid; ?></p>
-            <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName,0,1).'. ' : '') . $lastName; ?></p>
+            <p><span class="label">Name:</span> <?php echo $firstName . ' ' . ($middleName ? substr($middleName, 0, 1).'. ' : '') . $lastName; ?></p>
             <p><span class="label">From:</span> <?php echo $origin; ?></p>
             <p><span class="label">To:</span> <?php echo $destination; ?></p>
             <p><span class="label">Departure:</span> <?php echo $depart; ?></p>
