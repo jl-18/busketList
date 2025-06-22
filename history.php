@@ -154,14 +154,28 @@ if ($result && $result->num_rows > 0) {
   </footer>
 
   <script>
-    $(function () {
-      $("#inline-datepicker").datepicker({
-        onSelect: function (dateText, inst) {
-          console.log("Selected date: " + dateText);
-          // Future: Add AJAX or redirect here if you want to filter by selected date
-        },
-      });
+  $(function () {
+    $("#inline-datepicker").datepicker({
+      dateFormat: "yy-mm-dd", // Ensure this format matches your DB date format
+      onSelect: function (dateText, inst) {
+        console.log("Selected date: " + dateText);
+        
+        // AJAX request to filter routes based on selected date
+        $.ajax({
+          url: "filter_routes.php",
+          method: "GET",
+          data: { date: dateText },
+          success: function (response) {
+            // Replace only the part of the page where routes are displayed
+            $(".route-groups").html(response);
+          },
+          error: function (xhr, status, error) {
+            console.error("Error retrieving filtered routes: ", error);
+          }
+        });
+      },
     });
-  </script>
+  });
+</script>
 </body>
 </html>
