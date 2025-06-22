@@ -194,7 +194,7 @@ $locations = getUniqueLocations($conn);
       <button type="button" id="manageBookingsBtn">Manage my bookings</button>
     </form>
   </div>
-  <a href="admin.php" class="back-link" style="margin-left: 50px;">Back to navigation page</a>
+  <a href="index.html" class="back-link" style="margin-left: 50px;">Back to navigation page</a>
 </main>
 
 <footer id="about-section">
