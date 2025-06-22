@@ -85,10 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_action'])) {
   <title>Bus Records - Busket List</title>
   <link rel="stylesheet" href="styling/recordManagement.css?v=<?php echo time(); ?>">
   <style>
-    html, body { height: auto; min-height: 100%; overflow-x: hidden; }
+    html, body { height: 100%; margin: 0; display: flex; flex-direction: column; }
+    main { flex: 1; }
     nav ul li a { text-decoration: none; color: inherit; }
     nav ul li a:hover { color: #555; }
-    .form-group { margin-bottom: 20px; }
+    .form-group { margin-bottom: 20px; display: flex; flex-direction: column; align-items: flex-start; }
     select, input[type="number"], input[type="text"] {
         padding: 6px;
         margin-top: 5px;
@@ -102,6 +103,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_action'])) {
     }
     #notice-success { background-color: #4CAF50; color: white; }
     #notice-error { background-color: #e74c3c; color: white; }
+    .button-toggle {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 40px auto;
+    }
+    .button-toggle button {
+        padding: 20px 40px;
+        font-size: 1.3em;
+        background-color: #364f6b;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+    }
+    .form-groups {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    .single-tab {
+        text-align: center;
+        font-size: 1.3em;
+        padding: 15px;
+        background-color:rgba(255, 244, 27, 0.99);
+        margin-top: -3px;
+        font-weight: bold;
+    }
+    .back-link {
+        display: block;
+        text-align: center;
+        margin: 40px 0 20px;
+    }
   </style>
 </head>
 <body>
@@ -114,32 +148,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_action'])) {
     </ul>
   </nav>
   <div class="img-placeholder"></div>
-  <section>
-    <nav class="admin-navbar">
-      <ul>
-        <li><a href="recordManagement.php">Bus Records</a></li>
-        <li><a href="fareMatrix.php">Fare Matrix</a></li>
-        <li><a href="schedMatrix.php">Schedule Matrix</a></li>
-        <li><a href="routeMatrix.php">Route Matrix</a></li>
-      </ul>
-    </nav>
-  </section>
+</header>
 
-  <main>
-    <?php if ($successMessage): ?>
-      <div class="notice" id="notice-success"><?php echo $successMessage; ?></div>
-      <script>
-        setTimeout(() => document.getElementById("notice-success").style.display = 'none', 3000);
-        document.getElementById("notice-success").style.display = 'block';
-      </script>
-    <?php elseif ($errorMessage): ?>
-      <div class="notice" id="notice-error"><?php echo $errorMessage; ?></div>
-      <script>
-        setTimeout(() => document.getElementById("notice-error").style.display = 'none', 4000);
-        document.getElementById("notice-error").style.display = 'block';
-      </script>
-    <?php endif; ?>
+<main>
+  <div class="single-tab">Bus Records</div>
 
+  <?php if ($successMessage): ?>
+    <div class="notice" id="notice-success"><?php echo $successMessage; ?></div>
+    <script>
+      setTimeout(() => document.getElementById("notice-success").style.display = 'none', 3000);
+      document.getElementById("notice-success").style.display = 'block';
+    </script>
+  <?php elseif ($errorMessage): ?>
+    <div class="notice" id="notice-error"><?php echo $errorMessage; ?></div>
+    <script>
+      setTimeout(() => document.getElementById("notice-error").style.display = 'none', 4000);
+      document.getElementById("notice-error").style.display = 'block';
+    </script>
+  <?php endif; ?>
+
+  <div class="button-toggle">
+    <button onclick="showForm('add')">Add a Bus</button>
+    <button onclick="showForm('update')">Update a Bus</button>
+  </div>
+
+  <div id="addForm" style="display:none">
     <form method="POST" action="recordManagement.php">
       <div class="form-groups">
         <h1>Add a Bus</h1>
@@ -168,12 +201,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_action'])) {
         <button type="submit" class="submit-button" name="add_bus">Submit</button>
       </div>
     </form>
+  </div>
 
+  <div id="updateForm" style="display:none">
     <form method="POST" action="recordManagement.php">
-      <div class="form-group">
+      <div class="form-groups">
         <h1>Update a Bus</h1>
         <div class="form-group">
-          <label for="busID" class="required">Bus ID:</label>
+          <label for="busID">Bus ID:</label>
           <select name="busID" id="busID" required onchange="populateBusInfo()">
             <option value="" selected disabled hidden>Select a Bus</option>
             <?php foreach ($buses as $bus): ?>
@@ -197,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_action'])) {
           </select>
         </div>
         <div class="form-group">
-          <label for="seatcap" class="required">Seating Capacity:</label>
+          <label for="seatcap">Seating Capacity:</label>
           <input type="number" id="update-seatcap" name="seatcap" readonly>
         </div>
         <div class="form-group">
@@ -212,46 +247,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_action'])) {
         <button type="submit" class="submit-button" name="update_action">Go to update</button>
       </div>
     </form>
+  </div>
 
-    <a href="admin.php" class="back-link">Back to admin page</a>
-  </main>
-</header>
-
+  <a href="admin.php" class="back-link"> Back to admin page</a>
+</main>
 <footer id="about-section">
   <div class="footerBoxes">
-    <div class="footerBox"><h3>Privacy Policy</h3><hr>
-    <p>
-      We are committed to protecting your privacy. We will only use the
-      information we collect about you lawfully (in accordance with the
-      Data Protection Act 1998). Please read on if you wish to learn more
-      about our privacy policy.
-    </p>
-  </div>
-    <div class="footerBox"><h3>Terms of Service</h3><hr>
-    <p>
-      By using our service, you agree to provide accurate booking
-      information and comply with our travel and cancellation policies. We
-      are not liable for delays or missed trips caused by user error or
-      third-party issues.
-    </p>
-  </div>
-    <div class="footerBox"><h3>Help & Support</h3><hr>
-    <p>
-      If you have any questions or need assistance, our support team is
-      here to help. Contact us via email or visit our help center for
-      answers to frequently asked questions.
-    </p>
-  </div>
+    <div class="footerBox">
+      <h3>Privacy Policy</h3>
+      <hr>
+      <p>
+        We are committed to protecting your privacy. We will only use the
+        information we collect about you lawfully (in accordance with the
+        Data Protection Act 1998). Please read on if you wish to learn more
+        about our privacy policy.
+      </p>
+    </div>
+    <div class="footerBox">
+      <h3>Terms of Service</h3>
+      <hr>
+      <p>
+        By using our service, you agree to provide accurate booking
+        information and comply with our travel and cancellation policies. We
+        are not liable for delays or missed trips caused by user error or
+        third-party issues.
+      </p>
+    </div>
+    <div class="footerBox">
+      <h3>Help & Support</h3>
+      <hr>
+      <p>
+        If you have any questions or need assistance, our support team is
+        here to help. Contact us via email or visit our help center for
+        answers to frequently asked questions.
+      </p>
+    </div>
   </div>
   <hr>
   <p class="copy-right">2025 Busket List</p>
 </footer>
 
 <script>
+function showForm(type) {
+  document.getElementById('addForm').style.display = (type === 'add') ? 'block' : 'none';
+  document.getElementById('updateForm').style.display = (type === 'update') ? 'block' : 'none';
+}
+
 function populateBusInfo() {
   const select = document.getElementById("busID");
   const selected = select.options[select.selectedIndex];
-
   const bustypeid = selected.getAttribute("data-bustypeid");
   const seatcap = selected.getAttribute("data-seatcap");
 

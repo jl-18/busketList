@@ -25,7 +25,6 @@ if ($busID) {
     }
 }
 
-// Fetch current fare if origin, destination, and busID are set
 if ($origin && $destination && $busID) {
     $getFareQuery = $conn->prepare("SELECT fm.fareamount FROM farematrix fm JOIN routes r ON fm.routeid = r.routeid JOIN bus b ON b.routeid = r.routeid AND b.bustypeid = fm.bustypeid WHERE r.origin = ? AND r.destination = ? AND b.busid = ?");
     $getFareQuery->bind_param("ssi", $origin, $destination, $busID);
@@ -37,7 +36,6 @@ if ($origin && $destination && $busID) {
     $getFareQuery->close();
 }
 
-// Only update fare if form is fully submitted with a value
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID && $newFare !== null && $newFare !== '') {
     $fareQuery = $conn->prepare("SELECT fm.fareid FROM farematrix fm JOIN routes r ON fm.routeid = r.routeid JOIN bus b ON b.routeid = r.routeid AND b.bustypeid = fm.bustypeid WHERE r.origin = ? AND r.destination = ? AND b.busid = ?");
     $fareQuery->bind_param("ssi", $origin, $destination, $busID);
@@ -50,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID &
         $updateQuery->execute();
         $updateQuery->close();
         $notice = "Fare updated successfully.";
-        $currentFare = $newFare; // show the updated value immediately
+        $currentFare = $newFare;
     }
     $fareQuery->close();
 }
@@ -74,6 +72,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID &
     }
     .submit-button { display: block; margin-top: 10px; padding: 10px 20px; }
     .notice { text-align: center; margin-top: 10px; color: green; }
+      .center-tab {
+        text-align: center;
+        font-size: 1.3em;
+        padding: 15px;
+        background-color:rgba(255, 244, 27, 0.99);
+        margin-top: -3px;
+        font-weight: bold;
+    }  
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -88,16 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID &
   <div class="img-placeholder"></div>
 </header>
 
-<section>
-  <nav class="admin-navbar">
-    <ul>
-      <li><a href="recordManagement.php">Bus Records</a></li>
-      <li><a href="fareMatrix.php">Fare Matrix</a></li>
-      <li><a href="schedMatrix.php">Schedule Matrix</a></li>
-      <li><a href="routeMatrix.php">Route Matrix</a></li>
-    </ul>
-  </nav>
-</section>
+<div class="center-tab">Fare Matrix</div>
 
 <main>
   <form method="POST">
@@ -145,11 +152,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID &
       </div>
 
       <button type="submit" class="submit-button">Submit</button>
-      <a href="admin.php" class="back-link">Back to admin page</a>
+      <div class="nav-links">
+        <a href="recordManagement.php" class="back-link"> Back to Bus Records</a>
+        <a href="admin.php" class="back-link"> Back to admin page</a>
+      </div>
     </div>
   </form>
 </main>
-
 <footer id="about-section">
   <div class="footerBoxes">
     <div class="footerBox">
@@ -184,6 +193,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin && $destination && $busID &
   </div>
   <hr>
   <p class="copy-right">2025 Busket List</p>
-</footer>
 </body>
 </html>

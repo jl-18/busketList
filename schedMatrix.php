@@ -8,7 +8,6 @@ $busDetails = null;
 $origin = $destination = '';
 $schedules = [];
 
-// Load bus details and filtered origin/destination
 if ($busID) {
     $busQuery = $conn->prepare("SELECT b.busid, bt.description, bt.seatcap, r.origin, r.destination, b.routeid FROM bus b JOIN bustype bt ON b.bustypeid = bt.bustypeid JOIN routes r ON b.routeid = r.routeid WHERE b.busid = ?");
     $busQuery->bind_param("i", $busID);
@@ -22,7 +21,6 @@ if ($busID) {
     }
 }
 
-// Handle ADD Schedule
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addSchedule'])) {
     $origin = $_POST['add_origin'] ?? '';
     $destination = $_POST['add_destination'] ?? '';
@@ -56,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addSchedule'])) {
     }
 }
 
-// Handle UPDATE Schedule
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateSchedule'])) {
     $schedid = $_POST['update_schedid'] ?? '';
     $date = $_POST['update_date'] ?? '';
@@ -76,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateSchedule'])) {
     }
 }
 
-// Refresh schedule list
 if ($busID) {
     $schedStmt = $conn->prepare("SELECT schedid, scheddate, departtime FROM schedmatrix WHERE busid = ?");
     $schedStmt->bind_param("i", $busID);
@@ -103,6 +99,25 @@ $buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN busty
     .message-error { color: red; margin-bottom: 10px; }
     nav ul li a { text-decoration: none; color: inherit; }
     nav ul li a:hover { color: #555; }
+    
+    .center-tab {
+        text-align: center;
+        font-size: 1.3em;
+        padding: 15px;
+        background-color:rgba(255, 244, 27, 0.99);
+        margin-top: -3px;
+        font-weight: bold;
+    } 
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -115,17 +130,9 @@ $buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN busty
     </ul>
   </nav>
   <div class="img-placeholder"></div>
-  <section>
-    <nav class="admin-navbar">
-      <ul>
-        <li><a href="recordManagement.php">Bus Records</a></li>
-        <li><a href="fareMatrix.php">Fare Matrix</a></li>
-        <li><a href="schedMatrix.php">Schedule Matrix</a></li>
-        <li><a href="routeMatrix.php">Route Matrix</a></li>
-      </ul>
-    </nav>
-  </section>
 </header>
+
+<div class="center-tab">Schedule Matrix</div>
 
 <main>
   <form method="POST" action="schedMatrix.php?busid=<?php echo $busID; ?>">
@@ -202,16 +209,18 @@ $buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN busty
       </div>
 
       <button type="submit" name="updateSchedule" class="submit-button">Submit</button>
-      <a href="admin.php" class="back-link">Back to admin page</a>
+      <div class="nav-links">
+        <a href="recordManagement.php" class="back-link"> Back to Bus Records</a>
+        <a href="admin.php" class="back-link"> Back to admin page</a>
+      </div>
     </div>
   </form>
 </main>
-
 <footer id="about-section">
   <div class="footerBoxes">
     <div class="footerBox">
       <h3>Privacy Policy</h3>
-      <hr />
+      <hr>
       <p>
         We are committed to protecting your privacy. We will only use the
         information we collect about you lawfully (in accordance with the
@@ -221,7 +230,7 @@ $buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN busty
     </div>
     <div class="footerBox">
       <h3>Terms of Service</h3>
-      <hr />
+      <hr>
       <p>
         By using our service, you agree to provide accurate booking
         information and comply with our travel and cancellation policies. We
@@ -231,7 +240,7 @@ $buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN busty
     </div>
     <div class="footerBox">
       <h3>Help & Support</h3>
-      <hr />
+      <hr>
       <p>
         If you have any questions or need assistance, our support team is
         here to help. Contact us via email or visit our help center for
@@ -239,7 +248,7 @@ $buses = $conn->query("SELECT bus.busid, bustype.description FROM bus JOIN busty
       </p>
     </div>
   </div>
-  <hr />
+  <hr>
   <p class="copy-right">2025 Busket List</p>
 </footer>
 </body>

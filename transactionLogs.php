@@ -1,32 +1,3 @@
-<?php
-session_start();
-require_once 'db_connect.php';
-
-function get_safe_param($key) {
-    return htmlspecialchars(urldecode($_GET[$key] ?? ''));
-}
-
-// Fetch total sales per route
-$sales = [];
-
-$query = "
-    SELECT r.origin, r.destination, COUNT(b.passengerid) * f.fareamount AS total_sales
-    FROM booking b
-    JOIN schedmatrix s ON b.schedid = s.schedid
-    JOIN bus bs ON s.busid = bs.busid
-    JOIN farematrix f ON s.routeid = f.routeid AND bs.bustypeid = f.bustypeid
-    JOIN routes r ON s.routeid = r.routeid
-    GROUP BY r.routeid, r.origin, r.destination, f.fareamount
-    ORDER BY total_sales DESC
-";
-
-$result = $conn->query($query);
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $sales[] = $row;
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +17,49 @@ if ($result && $result->num_rows > 0) {
       display: inline-block; 
       margin-top: 10px; 
     }
+
+    .route-group-title {
+      display: grid;
+      grid-template-columns: 100px repeat(4, 1fr) 100px; /* First and last columns are 100px wide */
+      align-items: center;
+      width: 100%;
+    }
+
+    .route-group-title p {
+      margin: 0;
+      text-align: center; /* Default center alignment for middle items */
+    }
+
+    /* Optional: adjust text alignment for the first and last items */
+    .route-group-title p:first-child {
+      text-align: left;
+    }
+
+    .route-group-title p:last-child {
+      text-align: right;
+    }
+
+        .transaction-group {
+      display: grid;
+      grid-template-columns: 100px repeat(4, 1fr) 100px; /* First and last columns are 100px wide */
+      align-items: center;
+      width: 100%;
+    }
+
+    .transaction-group p {
+      margin: 0;
+      text-align: center; /* Default center alignment for middle items */
+    }
+
+    /* Optional: adjust text alignment for the first and last items */
+    .transaction-group p:first-child {
+      text-align: left;
+    }
+
+    .transaction-group p:last-child {
+      text-align: right;
+    }
+
   </style>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
@@ -90,14 +104,16 @@ if ($result && $result->num_rows > 0) {
             <p>Bus Type</p>
             <p>Payment</p>
           </div>
-          <div class="transaction-group">
-            <!-- Sample data, replace with actual data from our DB -->
-            <p>02148</p>
-            <p>Shikina Cabral</p>
-            <p>Cubao</p>
-            <p>Baguio</p>
-            <p>AC Express</p>
-            <p>1500</p>
+          <div id="transaction-container">
+            <div class="transaction-group">
+              <!-- here, replace the values of p -->
+              <p>Booking ID</p>
+              <p>Passenger</p>
+              <p>Origin</p>
+              <p>Destination</p>
+              <p>Bus Type</p>
+              <p>Payment</p>
+            </div>
           </div>
         </div>
       </div>
@@ -141,6 +157,31 @@ if ($result && $result->num_rows > 0) {
     <hr />
     <p class="copy-right">2025 Busket List</p>
   </footer>
+
+  <script>
+  $(function () {
+  $("#date").datepicker({
+    dateFormat: "yy-mm-dd",  // Use text input for jQuery UI datepicker
+    onSelect: function (dateText, inst) {
+      console.log("Selected date: " + dateText);
+      $.ajax({
+        url: "filter_bookings.php",
+        method: "GET",
+        data: { date: dateText },
+        success: function (response) {
+          // Replace the content inside the transaction container
+          $("#transaction-container").html(response);
+        },
+        error: function (xhr, status, error) {
+          console.error("Error retrieving booking details: ", error);
+        }
+      });
+    }
+  });
+});
+
+</script>
+
 
   
 </body>
