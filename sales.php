@@ -120,11 +120,11 @@ if ($result_destinations && $result_destinations->num_rows > 0) {
       background-color: #0056b3;
     }
     .filter-group {
-      margin-top: 20px;
+      /* margin-top: 20px; */
       padding: 15px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      background-color: #f9f9f9;
+      background-color: #fdfdfd;
       max-width: 300px; /* Narrower container */
     }
     .filter-group label {
@@ -152,6 +152,27 @@ if ($result_destinations && $result_destinations->num_rows > 0) {
       padding: 10px 0;
       border-bottom: 2px solid #ccc;
     }
+
+    #form-route {
+      margin: -10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    form > div.form-groups, 
+    form > div:not(.form-groups) {
+      /* flex: 1;  */
+      width: 250px; 
+      /* padding: 25px; */
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #fdfdfd;
+      display: flex;
+      flex-direction: column;
+      gap: 20px; 
+      /* border: #000000 solid; */
+}
   </style>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
@@ -172,6 +193,8 @@ if ($result_destinations && $result_destinations->num_rows > 0) {
         <ul>
           <li><a href="history.php">Most Travelled Route</a></li>
           <li><a href="sales.php">Sales</a></li>
+          <li><a href="transactionLogs.php">Transaction Logs</a></li>
+
         </ul>
       </nav>
     </section>
@@ -188,7 +211,7 @@ if ($result_destinations && $result_destinations->num_rows > 0) {
       <!-- Origin & Destination Filters -->
       <div class="travel-group filter-group">
         <h2>Filter by Origin &amp; Destination</h2>
-        <form method="GET" action="sales.php">
+        <form id = "form-route" method="GET" action="sales.php">
           <!-- Preserve the date or month parameters if already applied -->
           <?php if (!empty($selected_date)): ?>
             <input type="hidden" name="date" value="<?php echo htmlspecialchars($selected_date); ?>">
@@ -196,10 +219,10 @@ if ($result_destinations && $result_destinations->num_rows > 0) {
           <?php if (!empty($selected_month)): ?>
             <input type="hidden" name="month" value="<?php echo htmlspecialchars($selected_month); ?>">
           <?php endif; ?>
-          <div>
+          <div class="route-filter">
             <label for="origin">Origin:</label>
             <select name="origin" id="origin">
-              <option value="">-- All Origins --</option>
+              <option value="">Select origin</option>
               <?php foreach ($origins as $origin): ?>
                 <option value="<?php echo htmlspecialchars($origin); ?>" <?php if($origin === $originFilter) echo "selected"; ?>>
                   <?php echo ucfirst($origin); ?>
@@ -207,10 +230,10 @@ if ($result_destinations && $result_destinations->num_rows > 0) {
               <?php endforeach; ?>
             </select>
           </div>
-          <div>
+          <div class="route-filter">
             <label for="destination">Destination:</label>
             <select name="destination" id="destination">
-              <option value="">-- All Destinations --</option>
+              <option value="">Select destination</option>
               <?php foreach ($destinations as $dest): ?>
                 <option value="<?php echo htmlspecialchars($dest); ?>" <?php if($dest === $destinationFilter) echo "selected"; ?>>
                   <?php echo ucfirst($dest); ?>
