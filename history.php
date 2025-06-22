@@ -76,6 +76,7 @@ if ($result && $result->num_rows > 0) {
       <ul>
         <li><a href="history.php">Most Travelled Route</a></li>
         <li><a href="sales.php">Sales</a></li>
+        <li><a href="transactionLogs.php">Transaction Logs</a></li>
       </ul>
     </nav>
   </section>
