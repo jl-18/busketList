@@ -2,7 +2,7 @@
 session_start();
 require_once 'db_connect.php';
 
-$addSuccess = $addError = $updateSuccess = $updateError = $deleteSuccess = $deleteError = "";
+$addSuccess = $addError = $updateSuccess = $updateError = "";
 $busID = $_GET['busid'] ?? null;
 $busRoutes = [];
 
@@ -67,23 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateRoute'])) {
         $updateError = "All fields are required and distance must be a number.";
     }
 }
-
-// Delete Route
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
-    $routeid = $_POST['delete_routeid'] ?? '';
-    if ($routeid) {
-        $stmt = $conn->prepare("DELETE FROM routes WHERE routeid = ?");
-        $stmt->bind_param("i", $routeid);
-        if ($stmt->execute()) {
-            $deleteSuccess = "BusId $busID - RouteId $routeid has been deleted.";
-        } else {
-            $deleteError = "Failed to delete route.";
-        }
-        $stmt->close();
-    } else {
-        $deleteError = "Route ID is required.";
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -98,6 +81,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
     .message-error { color: red; margin-bottom: 10px; }
     nav ul li a { text-decoration: none; color: inherit; }
     nav ul li a:hover { color: #555; }
+    .center-tab {
+        text-align: center;
+        font-size: 1.3em;
+        padding: 15px;
+        background-color:rgba(255, 244, 27, 0.99);
+        margin-top: -3px;
+        font-weight: bold;
+    }     
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -110,17 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
     </ul>
   </nav>
   <div class="img-placeholder"></div>
-  <section>
-    <nav class="admin-navbar">
-      <ul>
-        <li><a href="recordManagement.php">Bus Records</a></li>
-        <li><a href="fareMatrix.php">Fare Matrix</a></li>
-        <li><a href="schedMatrix.php">Schedule Matrix</a></li>
-        <li><a href="routeMatrix.php">Route Matrix</a></li>
-      </ul>
-    </nav>
-  </section>
 </header>
+
+<div class="center-tab">Route Matrix</div>
+
 <main>
   <form method="POST" action="routeMatrix.php?busid=<?php echo $busID; ?>">
     <div class="form-groups">
@@ -175,27 +169,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
         <input type="number" name="new_distance" required>
       </div>
       <button type="submit" name="updateRoute" class="submit-button">Submit</button>
-    </div>
-  </form>
-
-  <form method="POST" action="routeMatrix.php?busid=<?php echo $busID; ?>">
-    <div class="form-groups">
-      <h1>Delete a Route</h1>
-      <?php if ($deleteSuccess) echo "<p class='message-success'>$deleteSuccess</p>"; ?>
-      <?php if ($deleteError) echo "<p class='message-error'>$deleteError</p>"; ?>
-      <div class="form-group">
-        <label for="delete_routeid">Select Route:</label>
-        <select name="delete_routeid" required>
-          <option value="" disabled selected>Select a route</option>
-          <?php foreach ($busRoutes as $route): ?>
-            <option value="<?php echo $route['routeid']; ?>">
-              <?php echo $route['origin'] . " to " . $route['destination']; ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
+      <div class="nav-links">
+        <a href="recordManagement.php" class="back-link"> Back to Bus Records</a>
+        <a href="admin.php" class="back-link"> Back to admin page</a>
       </div>
-      <button type="submit" name="deleteRoute" class="submit-button">Delete</button>
-      <a href="admin.php" class="back-link">Back to admin page</a>
     </div>
   </form>
 </main>
@@ -203,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
   <div class="footerBoxes">
     <div class="footerBox">
       <h3>Privacy Policy</h3>
-      <hr />
+      <hr>
       <p>
         We are committed to protecting your privacy. We will only use the
         information we collect about you lawfully (in accordance with the
@@ -213,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
     </div>
     <div class="footerBox">
       <h3>Terms of Service</h3>
-      <hr />
+      <hr>
       <p>
         By using our service, you agree to provide accurate booking
         information and comply with our travel and cancellation policies. We
@@ -223,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
     </div>
     <div class="footerBox">
       <h3>Help & Support</h3>
-      <hr />
+      <hr>
       <p>
         If you have any questions or need assistance, our support team is
         here to help. Contact us via email or visit our help center for
@@ -231,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteRoute'])) {
       </p>
     </div>
   </div>
-  <hr />
+  <hr>
   <p class="copy-right">2025 Busket List</p>
 </footer>
 </body>
