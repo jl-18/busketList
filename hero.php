@@ -56,7 +56,7 @@ $locations = getUniqueLocations($conn);
       font-size: 28px;
       font-weight: bold;
       cursor: pointer;
-      color: #f06292;
+      color:rgb(196, 23, 81);
     }
     .tab-buttons button {
       margin: 5px;
@@ -64,11 +64,11 @@ $locations = getUniqueLocations($conn);
       cursor: pointer;
       background-color: transparent;
       border: 1px solid #f06292;
-      color: #f06292;
+      color: #rgb(196, 23, 81);
       border-radius: 4px;
     }
     .tab-buttons button.active {
-      background-color: #f06292;
+      background-color:rgb(196, 23, 81);
       color: #fff;
       border: none;
     }
@@ -240,7 +240,7 @@ $locations = getUniqueLocations($conn);
     <form id="changeScheduleForm">
       <div class="modal-form-group">
         <label for="trip-ID-change">Trip ID:</label>
-        <small>(No. from the invoice presented to you)</small>
+        <small>(Please check the invoice presented to you.)</small>
         <input type="text" id="trip-ID-change" name="bookingid" required />
       </div>
       <p id="changeError" class="error-message" style="display: none;"></p>
@@ -251,7 +251,7 @@ $locations = getUniqueLocations($conn);
     <form id="seeInvoiceForm" style="display: none;">
       <div class="modal-form-group">
         <label for="trip-ID-invoice">Trip ID:</label>
-        <small>(No. from the invoice presented to you)</small>
+        <small>(Please check the invoice presented to you.)</small>
         <input type="text" id="trip-ID-invoice" name="bookingid" required />
       </div>
       <p id="invoiceError" class="error-message" style="display: none;"></p>
@@ -262,7 +262,7 @@ $locations = getUniqueLocations($conn);
     <form id="deleteBookingForm" style="display: none;">
       <div class="modal-form-group">
         <label for="trip-ID-delete">Trip ID:</label>
-        <small>(No. from the invoice presented to you)</small>
+        <small>(Please check the invoice presented to you.)</small>
         <input type="text" id="trip-ID-delete" name="bookingid" required />
       </div>
       <p id="deleteError" class="error-message" style="display: none;"></p>

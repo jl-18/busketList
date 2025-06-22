@@ -7,6 +7,7 @@ $booking = null;
 $scheduleOptions = [];
 
 if ($bookingid) {
+    // Retrieve the booking details (including the original scheduled date).
     $stmt = $conn->prepare("SELECT b.bookingid, s.busid, r.origin, r.destination, s.schedid, s.scheddate, s.departtime FROM booking b JOIN schedmatrix s ON b.schedid = s.schedid JOIN routes r ON b.routeid = r.routeid WHERE b.bookingid = ?");
     $stmt->bind_param("s", $bookingid);
     $stmt->execute();
@@ -17,14 +18,33 @@ if ($bookingid) {
         $busid = $booking['busid'];
         $route = $booking['origin'];
         $destination = $booking['destination'];
+        // Capture the day of the original booking
+        $bookingDate = $booking['scheddate'];
 
-        $schedStmt = $conn->prepare("SELECT s.schedid, s.scheddate, s.departtime FROM schedmatrix s JOIN routes r ON s.routeid = r.routeid WHERE s.busid = ? AND r.origin = ? AND r.destination = ?");
-        $schedStmt->bind_param("iss", $busid, $route, $destination);
+        // Now retrieve only schedule options starting from the original booking day up to the latest available date.
+        $schedStmt = $conn->prepare("
+            SELECT s.schedid, s.scheddate, s.departtime 
+            FROM schedmatrix s 
+            JOIN routes r ON s.routeid = r.routeid 
+            WHERE s.busid = ? 
+              AND r.origin = ? 
+              AND r.destination = ?
+              AND s.scheddate >= ?
+              AND s.scheddate <= (
+                  SELECT MAX(s2.scheddate)
+                  FROM schedmatrix s2 
+                  WHERE s2.busid = ? 
+                    AND s2.routeid = r.routeid
+              )
+        ");
+        // Assuming $busid is an integer and $route, $destination, $bookingDate are strings in 'YYYY-MM-DD' format.
+        $schedStmt->bind_param("isssi", $busid, $route, $destination, $bookingDate, $busid);
         $schedStmt->execute();
         $scheduleOptions = $schedStmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $schedStmt->close();
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
