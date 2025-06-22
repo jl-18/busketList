@@ -60,6 +60,71 @@
       text-align: right;
     }
 
+    .transaction-box {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    select {
+      height: 48px;
+      width: 300px;
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      color: #333;
+      background-color: #fff;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      box-sizing: border-box; 
+  }
+
+  .transaction-calendar input[type="text"] {
+    height: 48px;
+    width: 300px;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    color: #333;
+    background-color: #fff;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    -webkit-appearance: none; 
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  .route-groups {
+      margin-top: 20px;
+  }
+
+  .clear-button {
+    background-color: #f44336;  /* A vibrant red */
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  /* A subtle scale up on hover */
+  .clear-button:hover {
+    background-color: #AD1115;
+    transform: scale(1.05);
+  }
+
+  /* Optional: Style for active/click state */
+  .clear-button:active {
+    transform: scale(0.98);
+  }
   </style>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
@@ -89,14 +154,31 @@
     <div class="travel-container">
       <div class="travel-group routes-group">
         <h2>Transaction Logs</h2>
-        <div class="transaction-calendar">
-            <div class="trip-schedule">
-              <label for="date">Choose a date</label>
-              <input type="date" id="date" name="date" required />
-            </div>
+
+        <div class="transaction-box">
+          <div class="transaction-calendar">
+            <label for="date">Choose a date</label>
+            <input type="text" id="date" name="date" required />
+          </div>
+          <div class="transaction-calendar">
+            <label for="booking_id">Enter a Booking ID</label>
+            <input type="text" id="booking_id" name="booking_id" required />
+          </div>
+          <button type="button" id="clearFilters" class="clear-button">Clear</button>
         </div>
-        <div class="route-groups">
-          <div class="route-group-title">
+
+      <div class="route-groups">
+        <div class="route-group-title">
+          <p>Booking ID</p>
+          <p>Passenger</p>
+          <p>Origin</p>
+          <p>Destination</p>
+          <p>Bus Type</p>
+          <p>Payment</p>
+        </div>
+        <div id="transaction-container">
+          <div class="transaction-group">
+            <!-- Default/placeholder content -->
             <p>Booking ID</p>
             <p>Passenger</p>
             <p>Origin</p>
@@ -104,18 +186,8 @@
             <p>Bus Type</p>
             <p>Payment</p>
           </div>
-          <div id="transaction-container">
-            <div class="transaction-group">
-              <!-- here, replace the values of p -->
-              <p>Booking ID</p>
-              <p>Passenger</p>
-              <p>Origin</p>
-              <p>Destination</p>
-              <p>Bus Type</p>
-              <p>Payment</p>
-            </div>
-          </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -160,29 +232,68 @@
 
   <script>
   $(function () {
-  $("#date").datepicker({
-    dateFormat: "yy-mm-dd",  // Use text input for jQuery UI datepicker
-    onSelect: function (dateText, inst) {
-      console.log("Selected date: " + dateText);
+    // Function to reset the results container back to its placeholder content.
+    function resetContainer() {
+      $("#transaction-container").html(
+        `<div class="transaction-group">
+          <p>Booking ID</p>
+          <p>Passenger</p>
+          <p>Origin</p>
+          <p>Destination</p>
+          <p>Bus Type</p>
+          <p>Payment</p>
+        </div>`
+      );
+    }
+
+    // Unified function that performs the AJAX search using both inputs.
+    function doSearch() {
+      var searchDate = $("#date").val().trim();
+      var bookingID = $("#booking_id").val().trim();
+
+      // Only process search if a date is provided.
+      if (searchDate === "") {
+        resetContainer();
+        return;
+      }
+
+      // Send both the date and booking_id to the PHP script.
       $.ajax({
-        url: "filter_bookings.php",
+        url: "filter_booking_by_id.php",
         method: "GET",
-        data: { date: dateText },
+        data: {
+          date: searchDate,
+          booking_id: bookingID
+        },
         success: function (response) {
-          // Replace the content inside the transaction container
           $("#transaction-container").html(response);
         },
         error: function (xhr, status, error) {
-          console.error("Error retrieving booking details: ", error);
+          console.error("Error retrieving booking details:", error);
         }
       });
     }
+
+    // Initialize jQuery UI datepicker on the date input.
+    $("#date").datepicker({
+      dateFormat: "yy-mm-dd",
+      onSelect: function (dateText, inst) {
+        doSearch();
+      }
+    });
+
+    // Trigger search when typing in the booking ID field.
+    $("#booking_id").on("keyup", function () {
+      doSearch();
+    });
+
+    // Clear button event: clears both the date and booking ID input fields and resets the results.
+    $("#clearFilters").click(function () {
+      $("#date").val("");
+      $("#booking_id").val("");
+      resetContainer();
+    });
   });
-});
-
 </script>
-
-
-  
 </body>
 </html>
