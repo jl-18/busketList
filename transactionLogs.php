@@ -232,68 +232,69 @@
 
   <script>
   $(function () {
-    // Function to reset the results container back to its placeholder content.
-    function resetContainer() {
-      $("#transaction-container").html(
-        `<div class="transaction-group">
-          <p>Booking ID</p>
-          <p>Passenger</p>
-          <p>Origin</p>
-          <p>Destination</p>
-          <p>Bus Type</p>
-          <p>Payment</p>
-        </div>`
-      );
-    }
+  // Function to reset the results container back to its placeholder content.
+  function resetContainer() {
+    $("#transaction-container").html(
+      `<div class="transaction-group">
+         <p>Booking ID</p>
+         <p>Passenger</p>
+         <p>Origin</p>
+         <p>Destination</p>
+         <p>Bus Type</p>
+         <p>Payment</p>
+       </div>`
+    );
+  }
 
-    // Unified function that performs the AJAX search using both inputs.
-    function doSearch() {
-      var searchDate = $("#date").val().trim();
-      var bookingID = $("#booking_id").val().trim();
+  // Unified function that performs the AJAX search using both inputs.
+  function doSearch() {
+    var searchDate = $("#date").val().trim();
+    var bookingID = $("#booking_id").val().trim();
 
-      // Only process search if a date is provided.
-      if (searchDate === "") {
-        resetContainer();
-        return;
-      }
-
-      // Send both the date and booking_id to the PHP script.
-      $.ajax({
-        url: "filter_booking_by_id.php",
-        method: "GET",
-        data: {
-          date: searchDate,
-          booking_id: bookingID
-        },
-        success: function (response) {
-          $("#transaction-container").html(response);
-        },
-        error: function (xhr, status, error) {
-          console.error("Error retrieving booking details:", error);
-        }
-      });
-    }
-
-    // Initialize jQuery UI datepicker on the date input.
-    $("#date").datepicker({
-      dateFormat: "yy-mm-dd",
-      onSelect: function (dateText, inst) {
-        doSearch();
-      }
-    });
-
-    // Trigger search when typing in the booking ID field.
-    $("#booking_id").on("keyup", function () {
-      doSearch();
-    });
-
-    // Clear button event: clears both the date and booking ID input fields and resets the results.
-    $("#clearFilters").click(function () {
-      $("#date").val("");
-      $("#booking_id").val("");
+    // Only clear container if both fields are blank.
+    if (searchDate === "" && bookingID === "") {
       resetContainer();
+      return;
+    }
+
+    // Send both the date and booking_id to the PHP script.
+    $.ajax({
+      url: "filter_booking_by_id.php",  // use this consistent endpoint
+      method: "GET",
+      data: {
+        date: searchDate,
+        booking_id: bookingID
+      },
+      success: function (response) {
+        $("#transaction-container").html(response);
+      },
+      error: function (xhr, status, error) {
+        console.error("Error retrieving booking details:", error);
+      }
     });
+  }
+
+  // Initialize jQuery UI datepicker on the date input.
+  $("#date").datepicker({
+    dateFormat: "yy-mm-dd",
+    onSelect: function (dateText, inst) {
+      doSearch();
+    }
   });
+
+  // Trigger search when typing in the booking ID field.
+  $("#booking_id").on("keyup", function () {
+    doSearch();
+  });
+
+  // Clear button event: clears both the date and booking ID input fields and resets the results.
+  $("#clearFilters").click(function () {
+    $("#date").val("");
+    $("#booking_id").val("");
+    resetContainer();
+  });
+});
+
 </script>
 </body>
 </html>

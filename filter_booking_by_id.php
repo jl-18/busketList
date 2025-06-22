@@ -2,16 +2,17 @@
 session_start();
 require_once 'db_connect.php';
 
-$date = $_GET['date'] ?? '';
-$bookingID = $_GET['booking_id'] ?? '';
+// Grab and trim GET parameters.
+$date = trim($_GET['date'] ?? '');
+$bookingID = trim($_GET['booking_id'] ?? '');
 
-// Require a date since the booking id is to be filtered only for the inputted date.
-if (empty($date)) {
-    echo '<p>No date selected.</p>';
+// If both are empty, return a message.
+if(empty($date) && empty($bookingID)){
+    echo '<div class="transaction-group"><p>Please enter a Booking ID or choose a date.</p></div>';
     exit;
 }
 
-// Base query: filter by booking date.
+// Base query: start with a condition that is always true.
 $query = "
     SELECT 
         b.bookingid,
@@ -27,24 +28,43 @@ $query = "
     JOIN bus bs ON s.busid = bs.busid
     JOIN bustype bt ON bs.bustypeid = bt.bustypeid
     JOIN invoice i ON b.bookingid = i.bookingid
-    WHERE b.bookingdate = ?
+    WHERE 1=1
 ";
 
-// If a bookingID is provided, add it to the WHERE clause.
+// Prepare arrays for binding parameters.
+$params = [];
+$types = "";
+
+// If a date is provided, add the date condition.
+if (!empty($date)) {
+    $query .= " AND b.bookingdate = ? ";
+    $types .= "s";
+    $params[] = $date;
+}
+
+// If a booking ID is provided, add the booking ID condition.
+// Casting the booking ID to integer if it's numeric.
 if (!empty($bookingID)) {
-    $query .= " AND b.bookingid = ?";
+    $bookingID = intval($bookingID);
+    $query .= " AND b.bookingid = ? ";
+    $types .= "i"; 
+    $params[] = $bookingID;
 }
 
 $query .= " ORDER BY b.bookingid DESC";
 
-// Prepare statement.
-$stmt = $conn->prepare($query);
+// Debug: you can uncomment the following line to see the final query
+// error_log("SQL Query: " . $query);
 
-// Bind parameters based on whether bookingID was provided.
-if (!empty($bookingID)) {
-    $stmt->bind_param('ss', $date, $bookingID);
-} else {
-    $stmt->bind_param('s', $date);
+// Prepare and bind parameters.
+$stmt = $conn->prepare($query);
+if ($stmt === false) {
+    echo "Error preparing statement: " . $conn->error;
+    exit;
+}
+
+if ($params) {
+    $stmt->bind_param($types, ...$params);
 }
 
 $stmt->execute();
@@ -62,7 +82,7 @@ if ($result && $result->num_rows > 0) {
         echo '</div>';
     }
 } else {
-    echo '<div class="transaction-group"><p colspan="6">No bookings found for the provided criteria.</p></div>';
+    echo '<div class="transaction-group"><p>No bookings found for the provided criteria.</p></div>';
 }
 
 $stmt->close();
