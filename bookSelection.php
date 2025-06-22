@@ -28,12 +28,10 @@
 include 'db_connect.php'; 
 session_start();
 
-// Helper to safely get parameters
 function get_safe_param($key) {
   return htmlspecialchars(urldecode($_GET[$key] ?? ''));
 }
 
-// Retrieve values from the GET parameters coming from hero.php.
 $origin      = get_safe_param('origin');
 $destination = get_safe_param('destination');
 $depart      = get_safe_param('depart');
@@ -47,7 +45,6 @@ $displayDepartDate  = $depart ?: 'N/A';
 $displayTripType    = $tripType ? ucwords(str_replace('-', ' ', $tripType)) : 'N/A';
 $displayPassengers  = $passengers ?: '1';
 
-// Store the basic trip data into the session so later pages can access it.
 $_SESSION['trip'] = [
   'origin'      => $origin,
   'destination' => $destination,
@@ -57,14 +54,14 @@ $_SESSION['trip'] = [
   'return'      => $returnDate
 ];
 
-// Query available trips using the selected origin, destination, and date.
 $sql = "SELECT s.schedid, s.scheddate, s.departtime, bt.description AS class, bt.seatcap, f.fareamount
         FROM schedmatrix s
         JOIN routes r ON s.routeid = r.routeid
         JOIN bus b ON s.busid = b.busid
         JOIN bustype bt ON b.bustypeid = bt.bustypeid
         JOIN farematrix f ON r.routeid = f.routeid AND b.bustypeid = f.bustypeid
-        WHERE r.origin = ? AND r.destination = ? AND s.scheddate = ?";
+        WHERE r.origin = ? AND r.destination = ? AND s.scheddate = ?
+        ORDER BY s.departtime ASC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sss", $origin, $destination, $depart);
@@ -123,10 +120,20 @@ $result = $stmt->get_result();
       <tbody>
       <?php
       if ($result->num_rows > 0) {
-          // Fetch each available trip and generate a row.
           while ($trip = $result->fetch_assoc()) {
-              // Build query parameters to pass to the next step (passenger details).
-              // These include the specific schedule information that was selected.
+              $schedid = $trip['schedid'];
+              $seatCap = $trip['seatcap'];
+
+              // Query how many seats are already booked for this schedid
+              $bookedStmt = $conn->prepare("SELECT COUNT(*) AS booked_count FROM booking WHERE schedid = ?");
+              $bookedStmt->bind_param("i", $schedid);
+              $bookedStmt->execute();
+              $bookedResult = $bookedStmt->get_result();
+              $bookedRow = $bookedResult->fetch_assoc();
+              $bookedCount = $bookedRow['booked_count'] ?? 0;
+              $availableSeats = $seatCap - $bookedCount;
+              $bookedStmt->close();
+
               $params = [
                 'sched_id'    => urlencode($trip['schedid']),
                 'origin'      => urlencode($origin),
@@ -144,10 +151,9 @@ $result = $stmt->get_result();
               $query_string = http_build_query($params);
 
               echo '<tr>';
-              // Format departure time to, for example, 12:00 AM.
               echo '<td>' . htmlspecialchars(date("h:i A", strtotime($trip['departtime']))) . '</td>';
               echo '<td>' . htmlspecialchars($trip['class']) . '</td>';
-              echo '<td>' . htmlspecialchars($trip['seatcap']) . '</td>';
+              echo '<td>' . max(0, $availableSeats) . '</td>';
               echo '<td>₱' . number_format($trip['fareamount'], 2) . '</td>';
               echo '<td><a href="passenger.php?' . $query_string . '" class="book-button">Book</a></td>';
               echo '</tr>';
