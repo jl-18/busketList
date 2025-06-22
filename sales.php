@@ -41,16 +41,17 @@ if (count($filters) > 0) {
 // Query to compute total sales per route using the filters
 $sales = [];
 $query = "
-    SELECT r.origin, r.destination, COUNT(b.passengerid) * f.fareamount AS total_sales
+    SELECT r.origin, r.destination, SUM(f.fareamount) AS total_sales
     FROM booking b
     JOIN schedmatrix s ON b.schedid = s.schedid
     JOIN bus bs ON s.busid = bs.busid
     JOIN farematrix f ON s.routeid = f.routeid AND bs.bustypeid = f.bustypeid
     JOIN routes r ON s.routeid = r.routeid
     $condition
-    GROUP BY r.routeid, r.origin, r.destination, f.fareamount
-    ORDER BY total_sales DESC
+    GROUP BY r.routeid, r.origin, r.destination
+    ORDER BY total_sales DESC, r.origin ASC, r.destination ASC
 ";
+
 
 $result = $conn->query($query);
 if ($result && $result->num_rows > 0) {
