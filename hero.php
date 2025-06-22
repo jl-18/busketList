@@ -48,10 +48,8 @@ $locations = getUniqueLocations($conn);
   <div class="trip-info">
     <form id="tripForm" action="bookSelection.php" method="GET">
       <div class="trip-types">
-        <input type="radio" id="one-way" name="trip-type" value="one-way" required />
+        <input type="radio" id="one-way" name="trip-type" value="one-way" checked required />
         <label for="one-way">One-way</label>
-        <input type="radio" id="round-trip" name="trip-type" value="round-trip" />
-        <label for="round-trip">Round-trip</label>
       </div>
 
       <div class="trip-route">
@@ -90,6 +88,7 @@ $locations = getUniqueLocations($conn);
   </div>
   <a href="admin.php" class="back-link" style="margin-left: 50px;">Back to navigation page</a>
 </main>
+
 <footer id="about-section">
   <div class="footerBoxes">
     <div class="footerBox">
@@ -191,7 +190,7 @@ $locations = getUniqueLocations($conn);
     changeScheduleForm.style.display = 'none';
   });
 
-  // Validate booking ID via AJAX before redirect
+  // Validate booking ID before redirect
   document.getElementById("changeScheduleForm").addEventListener("submit", function (e) {
     e.preventDefault();
     const bookingid = document.getElementById("trip-ID-change").value.trim();
@@ -243,18 +242,7 @@ $locations = getUniqueLocations($conn);
       });
   });
 
-  // Validate date logic
-  document.getElementById("tripForm").addEventListener("submit", function (e) {
-    const depart = document.getElementById("depart").value;
-    const returnDate = document.getElementById("return")?.value;
-    const errorDiv = document.getElementById("dateError");
-    errorDiv.textContent = "";
-    if (returnDate && returnDate <= depart) {
-      e.preventDefault();
-      errorDiv.textContent = "Return date must be after the departure date.";
-    }
-  });
-
+  // Disable past dates
   document.getElementById("depart").setAttribute("min", new Date().toISOString().split("T")[0]);
 </script>
 </body>

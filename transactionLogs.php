@@ -6,23 +6,24 @@ function get_safe_param($key) {
     return htmlspecialchars(urldecode($_GET[$key] ?? ''));
 }
 
-// Query for Top 3 Most Travelled Routes
-$topRoutes = [];
+// Fetch total sales per route
+$sales = [];
 
 $query = "
-    SELECT r.origin, r.destination, COUNT(*) AS frequency
+    SELECT r.origin, r.destination, COUNT(b.passengerid) * f.fareamount AS total_sales
     FROM booking b
     JOIN schedmatrix s ON b.schedid = s.schedid
+    JOIN bus bs ON s.busid = bs.busid
+    JOIN farematrix f ON s.routeid = f.routeid AND bs.bustypeid = f.bustypeid
     JOIN routes r ON s.routeid = r.routeid
-    GROUP BY r.origin, r.destination
-    ORDER BY frequency DESC
-    LIMIT 3
+    GROUP BY r.routeid, r.origin, r.destination, f.fareamount
+    ORDER BY total_sales DESC
 ";
 
 $result = $conn->query($query);
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        $topRoutes[] = $row;
+        $sales[] = $row;
     }
 }
 ?>
@@ -31,30 +32,19 @@ if ($result && $result->num_rows > 0) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Most Travelled Routes - Busket List</title>
+  <title>Sales Summary - Busket List</title>
   <link rel="stylesheet" href="styling/recordManagement.css?v=<?php echo time(); ?>" />
   <style>
-    html, body {
-      height: auto;
-      min-height: 100%;
-      overflow-x: hidden;
-    }
-    footer {
-      margin-top: 40px;
-    }
-    nav ul li a {
-      text-decoration: none;
-      color: inherit;
-    }
-    nav ul li a:hover {
-      color: #555;
-    }
+    html, body { height: auto; min-height: 100%; overflow-x: hidden; }
+    footer { margin-top: 40px; }
+    nav ul li a { text-decoration: none; color: inherit; }
+    nav ul li a:hover { color: #555; }
     #inline-datepicker {
       border: 1px solid #ccc;
       border-radius: 4px;
       padding: 10px;
-      display: inline-block;
-      margin-top: 10px;
+      display: inline-block; 
+      margin-top: 10px; 
     }
   </style>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
@@ -77,38 +67,38 @@ if ($result && $result->num_rows > 0) {
         <li><a href="history.php">Most Travelled Route</a></li>
         <li><a href="sales.php">Sales</a></li>
         <li><a href="transactionLogs.php">Transaction Logs</a></li>
-
       </ul>
     </nav>
   </section>
 
   <main>
     <div class="travel-container">
-      <div class="travel-group calendar-group">
-        <h2>Choose date</h2>
-        <div id="inline-datepicker"></div>
-      </div>
-
       <div class="travel-group routes-group">
-        <h2>Top 3 Most Travelled Routes</h2>
+        <h2>Transaction Logs</h2>
+        <div class="transaction-calendar">
+            <div class="trip-schedule">
+              <label for="date">Choose a date</label>
+              <input type="date" id="date" name="date" required />
+            </div>
+        </div>
         <div class="route-groups">
           <div class="route-group-title">
-            <p>ROUTES</p>
-            <p>FREQUENCY</p>
+            <p>Booking ID</p>
+            <p>Passenger</p>
+            <p>Origin</p>
+            <p>Destination</p>
+            <p>Bus Type</p>
+            <p>Payment</p>
           </div>
-
-          <?php if (count($topRoutes) > 0): ?>
-            <?php foreach ($topRoutes as $route): ?>
-              <div class="route-group">
-                <p><?php echo strtoupper($route['origin']) . " to " . strtoupper($route['destination']); ?></p>
-                <p><?php echo $route['frequency']; ?></p>
-              </div>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <div class="route-group">
-              <p colspan="2">No data available.</p>
-            </div>
-          <?php endif; ?>
+          <div class="transaction-group">
+            <!-- Sample data, replace with actual data from our DB -->
+            <p>02148</p>
+            <p>Shikina Cabral</p>
+            <p>Cubao</p>
+            <p>Baguio</p>
+            <p>AC Express</p>
+            <p>1500</p>
+          </div>
         </div>
       </div>
     </div>
@@ -146,22 +136,12 @@ if ($result && $result->num_rows > 0) {
         here to help. Contact us via email or visit our help center for
         answers to frequently asked questions.
         </p>
-
       </div>
     </div>
     <hr />
     <p class="copy-right">2025 Busket List</p>
   </footer>
 
-  <script>
-    $(function () {
-      $("#inline-datepicker").datepicker({
-        onSelect: function (dateText, inst) {
-          console.log("Selected date: " + dateText);
-          // Future: Add AJAX or redirect here if you want to filter by selected date
-        },
-      });
-    });
-  </script>
+  
 </body>
 </html>
