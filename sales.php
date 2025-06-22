@@ -64,7 +64,7 @@ if ($result && $result->num_rows > 0) {
   <section>
     <nav class="admin-navbar">
       <ul>
-        <li><a href="recordManagement.php">Most Travelled Route</a></li>
+        <li><a href="history.php">Most Travelled Route</a></li>
         <li><a href="sales.php">Sales</a></li>
       </ul>
     </nav>
